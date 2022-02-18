@@ -1,0 +1,1 @@
+create sequence employee_sequence start 1;

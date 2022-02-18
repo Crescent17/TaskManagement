@@ -1,8 +1,8 @@
 package com.project.taskmanagement.service;
 
-import com.project.taskmanagement.model.Company;
-import com.project.taskmanagement.model.CompanyPrincipal;
-import com.project.taskmanagement.repository.CompanyRepository;
+import com.project.taskmanagement.model.Employee;
+import com.project.taskmanagement.model.EmployeePrincipal;
+import com.project.taskmanagement.repository.EmployeeRepository;
 import com.project.taskmanagement.util.PasswordEncoder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -13,22 +13,22 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service
-public class CompanyDetailsService implements UserDetailsService {
-    private final CompanyRepository companyRepository;
+public class EmployeeDetailsService implements UserDetailsService {
+    private final EmployeeRepository employeeRepository;
     private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    public CompanyDetailsService(CompanyRepository companyRepository, PasswordEncoder passwordEncoder) {
-        this.companyRepository = companyRepository;
+    public EmployeeDetailsService(EmployeeRepository employeeRepository, PasswordEncoder passwordEncoder) {
+        this.employeeRepository = employeeRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        List<Company> companies = companyRepository.findByUsername(username);
-        if (companies.isEmpty()) {
+        List<Employee> employees = employeeRepository.findByUsername(username);
+        if (employees.isEmpty()) {
             throw new UsernameNotFoundException("User " + username + " doesn't exist!");
         }
-        return new CompanyPrincipal(companies.get(0), passwordEncoder);
+        return new EmployeePrincipal(employees.get(0), passwordEncoder);
     }
 }

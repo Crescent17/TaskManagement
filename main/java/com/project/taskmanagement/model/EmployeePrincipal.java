@@ -9,29 +9,29 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Collection;
 import java.util.Collections;
 
-public class CompanyPrincipal implements UserDetails {
-    private final Company company;
+public class EmployeePrincipal implements UserDetails {
+    private final Employee employee;
     private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    public CompanyPrincipal(Company company, PasswordEncoder passwordEncoder) {
-        this.company = company;
+    public EmployeePrincipal(Employee employee, PasswordEncoder passwordEncoder) {
+        this.employee = employee;
         this.passwordEncoder = passwordEncoder;
     }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return Collections.singletonList(new SimpleGrantedAuthority("ROLE_COMPANY"));
+        return Collections.singletonList(new SimpleGrantedAuthority("ROLE_EMPLOYEE"));
     }
 
     @Override
     public String getPassword() {
-        return passwordEncoder.getPasswordEncoder().encode(company.getPassword());
+        return passwordEncoder.getPasswordEncoder().encode(employee.getPassword());
     }
 
     @Override
     public String getUsername() {
-        return company.getUsername();
+        return employee.getUsername();
     }
 
     @Override

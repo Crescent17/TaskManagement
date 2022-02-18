@@ -1,0 +1,1 @@
+create sequence company_sequence start 1;

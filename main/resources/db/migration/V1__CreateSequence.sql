@@ -1,1 +1,0 @@
-create sequence s1 start 1;
