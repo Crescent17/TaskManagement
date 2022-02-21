@@ -1,9 +1,23 @@
 package com.project.taskmanagement.model;
 
+import com.project.taskmanagement.util.MyPasswordEncoder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+
 import javax.persistence.*;
+import java.util.Collection;
+import java.util.Collections;
 
 @Entity
-public class Employee {
+@Getter()
+@Setter
+@NoArgsConstructor
+public class Employee implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long employeeId;
@@ -20,79 +34,42 @@ public class Employee {
     @Column(nullable = false)
     private String companyName;
     private String task;
+    @Transient
+    private MyPasswordEncoder myPasswordEncoder;
 
-    public Employee() {
-    }
 
-    public Employee(String name, String lastName, String username, String password, String companyName) {
+    @Autowired
+    public Employee(String name, String lastName, String username, String password, String companyName, MyPasswordEncoder myPasswordEncoder) {
         this.name = name;
         this.lastName = lastName;
         this.username = username;
-        this.password = password;
+        this.password = myPasswordEncoder.getPasswordEncoder().encode(password);
         this.companyName = companyName;
+        this.myPasswordEncoder = myPasswordEncoder;
     }
 
-    public Long getEmployeeId() {
-        return employeeId;
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return Collections.singletonList(new SimpleGrantedAuthority("ROLE_EMPLOYEE"));
     }
 
-    public void setEmployeeId(Long employeeId) {
-        this.employeeId = employeeId;
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
     }
 
-    public String getName() {
-        return name;
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
     }
 
-    public String getLastName() {
-        return lastName;
-    }
-
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public Company getCompany() {
-        return company;
-    }
-
-    public void setCompany(Company company) {
-        this.company = company;
-    }
-
-    public String getCompanyName() {
-        return companyName;
-    }
-
-    public void setCompanyName(String companyName) {
-        this.companyName = companyName;
-    }
-
-    public String getTask() {
-        return task;
-    }
-
-    public void setTask(String task) {
-        this.task = task;
+    @Override
+    public boolean isEnabled() {
+        return true;
     }
 }

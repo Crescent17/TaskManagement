@@ -1,10 +1,25 @@
 package com.project.taskmanagement.model;
 
+import com.project.taskmanagement.util.MyPasswordEncoder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.stereotype.Component;
+
 import javax.persistence.*;
+import java.util.Collection;
+import java.util.Collections;
 
 
 @Entity
-public class Company {
+@Getter
+@Setter
+@NoArgsConstructor
+@Component
+public class Company implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long companyId;
@@ -14,9 +29,8 @@ public class Company {
     private String username;
     @Column(nullable = false)
     private String password;
-
-    public Company() {
-    }
+    @Transient
+    private MyPasswordEncoder myPasswordEncoder;
 
     public Company(String name, String username, String password) {
         this.name = name;
@@ -24,36 +38,32 @@ public class Company {
         this.password = password;
     }
 
-    public Long getCompanyId() {
-        return companyId;
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return Collections.singletonList(new SimpleGrantedAuthority("ROLE_COMPANY"));
     }
 
-    public void setCompanyId(Long companyId) {
-        this.companyId = companyId;
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
     }
 
-    public String getName() {
-        return name;
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
     }
 
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
+    @Override
+    public boolean isEnabled() {
+        return true;
     }
 
     public String getPassword() {
-        return password;
+        return myPasswordEncoder.getPasswordEncoder().encode(password);
     }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
 }
