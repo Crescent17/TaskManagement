@@ -1,23 +1,15 @@
 package com.project.taskmanagement.service;
 
-import com.project.taskmanagement.model.AuthenticationRequest;
-import com.project.taskmanagement.model.AuthenticationResponse;
 import com.project.taskmanagement.model.Company;
 import com.project.taskmanagement.model.Employee;
 import com.project.taskmanagement.repository.CompanyRepository;
 import com.project.taskmanagement.repository.EmployeeRepository;
-import com.project.taskmanagement.util.JwtUtil;
-import com.project.taskmanagement.util.MyPasswordEncoder;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestBody;
 
 import javax.persistence.EntityExistsException;
 import java.util.List;
@@ -27,16 +19,11 @@ import java.util.Optional;
 public class EmployeeService implements UserDetailsService {
     private final EmployeeRepository employeeRepository;
     private final CompanyRepository companyRepository;
-    private final AuthenticationManager authenticationManager;
-    private final JwtUtil jwtTokenUtil;
 
     @Autowired
-    public EmployeeService(EmployeeRepository employeeRepository, CompanyRepository companyRepository,
-                           AuthenticationManager authenticationManager, JwtUtil jwtTokenUtil) {
+    public EmployeeService(EmployeeRepository employeeRepository, CompanyRepository companyRepository) {
         this.employeeRepository = employeeRepository;
         this.companyRepository = companyRepository;
-        this.authenticationManager = authenticationManager;
-        this.jwtTokenUtil = jwtTokenUtil;
     }
 
     @Override
@@ -67,18 +54,4 @@ public class EmployeeService implements UserDetailsService {
     public Optional<Employee> findById(Long id) {
         return employeeRepository.findById(id);
     }
-
-    public ResponseEntity<?> createAuthenticationTokenForEmployee(AuthenticationRequest authenticationRequest) throws Exception {
-        try {
-            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authenticationRequest.getUsername(),
-                    authenticationRequest.getPassword()));
-        } catch (BadCredentialsException e) {
-            throw new Exception("Incorrect username or password", e);
-        }
-        final UserDetails userDetails = loadUserByUsername(authenticationRequest.getUsername());
-        final String jwt = jwtTokenUtil.generateToken(userDetails);
-        return ResponseEntity.ok(new AuthenticationResponse(jwt));
-    }
-
-
 }
