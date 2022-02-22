@@ -1,8 +1,11 @@
 package com.project.taskmanagement.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
+import lombok.experimental.FieldNameConstants;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -29,11 +32,28 @@ public class Employee implements UserDetails {
     private String password;
     @ManyToOne(cascade = CascadeType.ALL,fetch = FetchType.EAGER)
     @JoinColumn(name = "company_id", referencedColumnName = "companyId")
+    @JsonIgnore
     private Company company;
     @Column(nullable = false)
     private String companyName;
     private String task;
+    @JsonIgnore
     @Transient
+    private boolean accountNonLocked;
+    @JsonIgnore
+    @Transient
+    private boolean accountNonExpired;
+    @JsonIgnore
+    @Transient
+    private boolean credentialsNonExpired;
+    @Transient
+    @JsonIgnore
+    private Collection<? extends GrantedAuthority> authorities;
+    @Transient
+    @JsonIgnore
+    private boolean enabled;
+    @Transient
+    @JsonIgnore
     private BCryptPasswordEncoder myPasswordEncoder = new BCryptPasswordEncoder();
 
 
@@ -41,6 +61,7 @@ public class Employee implements UserDetails {
         this.name = name;
         this.lastName = lastName;
         this.username = username;
+        this.password = password;
         this.companyName = companyName;
     }
 

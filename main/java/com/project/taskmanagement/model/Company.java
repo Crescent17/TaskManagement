@@ -1,9 +1,6 @@
 package com.project.taskmanagement.model;
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -31,6 +28,7 @@ public class Company implements UserDetails {
     @Column(nullable = false)
     private String password;
     @Transient
+    @ToString.Exclude
     private BCryptPasswordEncoder myPasswordEncoder = new BCryptPasswordEncoder();
 
     public Company(String name, String username, String password) {
