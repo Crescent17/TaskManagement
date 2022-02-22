@@ -7,6 +7,7 @@ import com.project.taskmanagement.model.Employee;
 import com.project.taskmanagement.service.CompanyService;
 import com.project.taskmanagement.service.EmployeeService;
 import com.project.taskmanagement.util.JwtUtil;
+import com.project.taskmanagement.util.MyPasswordEncoder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.http.ResponseEntity;

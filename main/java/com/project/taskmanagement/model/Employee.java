@@ -1,13 +1,12 @@
 package com.project.taskmanagement.model;
 
-import com.project.taskmanagement.util.MyPasswordEncoder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import javax.persistence.*;
 import java.util.Collection;
@@ -35,17 +34,14 @@ public class Employee implements UserDetails {
     private String companyName;
     private String task;
     @Transient
-    private MyPasswordEncoder myPasswordEncoder;
+    private BCryptPasswordEncoder myPasswordEncoder = new BCryptPasswordEncoder();
 
 
-    @Autowired
-    public Employee(String name, String lastName, String username, String password, String companyName, MyPasswordEncoder myPasswordEncoder) {
+    public Employee(String name, String lastName, String username, String password, String companyName) {
         this.name = name;
         this.lastName = lastName;
         this.username = username;
-        this.password = myPasswordEncoder.getPasswordEncoder().encode(password);
         this.companyName = companyName;
-        this.myPasswordEncoder = myPasswordEncoder;
     }
 
     @Override
@@ -71,5 +67,9 @@ public class Employee implements UserDetails {
     @Override
     public boolean isEnabled() {
         return true;
+    }
+
+    public String getPassword() {
+        return myPasswordEncoder.encode(password);
     }
 }

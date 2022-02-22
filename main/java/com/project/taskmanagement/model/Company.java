@@ -1,12 +1,13 @@
 package com.project.taskmanagement.model;
 
-import com.project.taskmanagement.util.MyPasswordEncoder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import javax.persistence.*;
@@ -30,7 +31,7 @@ public class Company implements UserDetails {
     @Column(nullable = false)
     private String password;
     @Transient
-    private MyPasswordEncoder myPasswordEncoder;
+    private BCryptPasswordEncoder myPasswordEncoder = new BCryptPasswordEncoder();
 
     public Company(String name, String username, String password) {
         this.name = name;
@@ -64,6 +65,6 @@ public class Company implements UserDetails {
     }
 
     public String getPassword() {
-        return myPasswordEncoder.getPasswordEncoder().encode(password);
+        return myPasswordEncoder.encode(password);
     }
 }

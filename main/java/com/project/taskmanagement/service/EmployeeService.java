@@ -4,6 +4,7 @@ import com.project.taskmanagement.model.Company;
 import com.project.taskmanagement.model.Employee;
 import com.project.taskmanagement.repository.CompanyRepository;
 import com.project.taskmanagement.repository.EmployeeRepository;
+import com.project.taskmanagement.util.MyPasswordEncoder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
