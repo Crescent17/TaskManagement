@@ -3,7 +3,6 @@ package com.project.taskmanagement.config;
 import com.project.taskmanagement.filter.JwtRequestFilter;
 import com.project.taskmanagement.service.CompanyService;
 import com.project.taskmanagement.service.EmployeeService;
-import com.project.taskmanagement.util.MyPasswordEncoder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -12,6 +11,8 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @EnableWebSecurity
@@ -19,22 +20,22 @@ public class CompanySecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     private final CompanyService companyService;
     private final EmployeeService employeeService;
-    private final MyPasswordEncoder myPasswordEncoder;
+//    private final MyPasswordEncoder myPasswordEncoder;
     private final JwtRequestFilter jwtRequestFilter;
 
     @Autowired
-    public CompanySecurityConfiguration(CompanyService companyService, MyPasswordEncoder myPasswordEncoder, EmployeeService employeeService,
+    public CompanySecurityConfiguration(CompanyService companyService, EmployeeService employeeService,
                                         JwtRequestFilter jwtRequestFilter) {
         this.companyService = companyService;
-        this.myPasswordEncoder = myPasswordEncoder;
+//        this.myPasswordEncoder = myPasswordEncoder;
         this.employeeService = employeeService;
         this.jwtRequestFilter = jwtRequestFilter;
     }
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        auth.userDetailsService(companyService).passwordEncoder(myPasswordEncoder.getPasswordEncoder())
-                .and().userDetailsService(employeeService);
+        auth.userDetailsService(companyService)
+                .and().userDetailsService(employeeService).passwordEncoder(passwordEncoderCompanyBean());
     }
 
     @Override
@@ -48,12 +49,18 @@ public class CompanySecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .antMatchers("/company/**").hasRole("COMPANY")
                 .antMatchers("/employee/**").hasAnyRole("COMPANY", "EMPLOYEE")
                 .and().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
-        http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
+//        http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
     }
 
     @Override
     @Bean
     public AuthenticationManager authenticationManagerBean() throws Exception {
         return super.authenticationManagerBean();
+    }
+
+
+    @Bean
+    public PasswordEncoder passwordEncoderCompanyBean() {
+        return new BCryptPasswordEncoder();
     }
 }
