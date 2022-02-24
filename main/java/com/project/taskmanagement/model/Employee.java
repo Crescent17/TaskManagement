@@ -1,9 +1,25 @@
 package com.project.taskmanagement.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+
 import javax.persistence.*;
+import java.util.Collection;
+import java.util.Collections;
 
 @Entity
-public class Employee {
+@Getter
+@Setter
+@JsonIgnoreProperties({"company", "accountNonLocked", "accountNonExpired", "credentialsNonExpired", "authorities", "enabled", "myPasswordEncoder"})
+@AllArgsConstructor
+@NoArgsConstructor
+public class Employee implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long employeeId;
@@ -14,15 +30,22 @@ public class Employee {
     private String username;
     @Column(nullable = false)
     private String password;
-    @ManyToOne(cascade = CascadeType.ALL,fetch = FetchType.EAGER)
+    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinColumn(name = "company_id", referencedColumnName = "companyId")
     private Company company;
     @Column(nullable = false)
     private String companyName;
     private String task;
-
-    public Employee() {
-    }
+    @Transient
+    private boolean accountNonLocked;
+    @Transient
+    private boolean accountNonExpired;
+    @Transient
+    private boolean credentialsNonExpired;
+    @Transient
+    private Collection<? extends GrantedAuthority> authorities;
+    @Transient
+    private boolean enabled;
 
     public Employee(String name, String lastName, String username, String password, String companyName) {
         this.name = name;
@@ -32,67 +55,29 @@ public class Employee {
         this.companyName = companyName;
     }
 
-    public Long getEmployeeId() {
-        return employeeId;
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return Collections.singletonList(new SimpleGrantedAuthority("ROLE_EMPLOYEE"));
     }
 
-    public void setEmployeeId(Long employeeId) {
-        this.employeeId = employeeId;
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
     }
 
-    public String getName() {
-        return name;
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
     }
 
-    public String getLastName() {
-        return lastName;
+    @Override
+    public boolean isEnabled() {
+        return true;
     }
 
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public Company getCompany() {
-        return company;
-    }
-
-    public void setCompany(Company company) {
-        this.company = company;
-    }
-
-    public String getCompanyName() {
-        return companyName;
-    }
-
-    public void setCompanyName(String companyName) {
-        this.companyName = companyName;
-    }
-
-    public String getTask() {
-        return task;
-    }
-
-    public void setTask(String task) {
-        this.task = task;
-    }
 }

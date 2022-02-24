@@ -1,37 +1,45 @@
 package com.project.taskmanagement.controller;
 
+import com.project.taskmanagement.model.AuthenticationRequest;
+import com.project.taskmanagement.model.AuthenticationResponse;
 import com.project.taskmanagement.model.Company;
 import com.project.taskmanagement.model.Employee;
-import com.project.taskmanagement.repository.CompanyRepository;
-import com.project.taskmanagement.repository.EmployeeRepository;
+import com.project.taskmanagement.service.CompanyService;
+import com.project.taskmanagement.service.EmployeeService;
+import com.project.taskmanagement.util.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.repository.Modifying;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
-import javax.persistence.EntityExistsException;
 import java.util.List;
-import java.util.Optional;
 
-@RestController("/hello")
+@RestController
+@Component
 public class HomeController {
-    private final CompanyRepository companyRepository;
-    private final EmployeeRepository employeeRepository;
+    private final CompanyService companyService;
+    private final EmployeeService employeeService;
+    private final AuthenticationManager authenticationManager;
+    private final JwtUtil jwtTokenUtil;
 
     @Autowired
-    public HomeController(CompanyRepository companyRepository, EmployeeRepository employeeRepository) {
-        this.companyRepository = companyRepository;
-        this.employeeRepository = employeeRepository;
+    public HomeController(EmployeeService employeeService, CompanyService companyService, AuthenticationManager authenticationManager,
+                          JwtUtil jwtUtil) {
+        this.employeeService = employeeService;
+        this.companyService = companyService;
+        this.authenticationManager = authenticationManager;
+        this.jwtTokenUtil = jwtUtil;
     }
 
     @GetMapping("/company/info")
     public List<Employee> company() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String username = authentication.getName();
-        Company company = companyRepository.findByUsername(username).get(0);
-        return employeeRepository.findByCompanyId(company.getCompanyId());
+        return companyService.printInfo();
     }
 
     @GetMapping(value = "/employee")
@@ -41,39 +49,44 @@ public class HomeController {
 
     @PostMapping("/company/register")
     public String register(@RequestBody Company company) {
-        if (!companyRepository.findByUsername(company.getUsername()).isEmpty()) {
-            throw new EntityExistsException("Company with this login already exists!");
-        }
-        companyRepository.save(company);
-        return "Successful registration!";
+        return companyService.register(company);
     }
 
     @PostMapping("/employee/register")
     public String register(@RequestBody Employee employee) {
-        if (companyRepository.findByNameIgnoreCase(employee.getCompanyName()).isEmpty()) {
-            throw new IllegalStateException("There is no such company registered!");
-        } else if (!employeeRepository.findByUsername(employee.getUsername()).isEmpty()) {
-            throw new EntityExistsException("Employee with this login already exists!");
-        }
-        Company company = companyRepository.findByNameIgnoreCase(employee.getCompanyName()).get(0);
-        employee.setCompany(company);
-        employeeRepository.save(employee);
-        return "Successful registration!";
+        return employeeService.register(employee);
     }
 
     @Modifying
     @Transactional
     @PutMapping("/company/assign/{employeeId}")
     public String assignTask(@ModelAttribute(value = "taskExplanation", name = "taskExplanation") String taskExplanation, @PathVariable Long employeeId) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String username = authentication.getName();
-        List<Company> company = companyRepository.findByUsername(username);
-        Optional<Employee> employeeById = employeeRepository.findById(employeeId);
-        if (!company.isEmpty() && employeeById.get().getCompany().getName().equalsIgnoreCase(company.get(0).getName())) {
-            employeeById.orElseThrow(() -> new NullPointerException("Username with this id is not found")).setTask(taskExplanation);
-        } else {
-            return "Error!";
+        return companyService.assignTask(employeeId, taskExplanation);
+    }
+
+    @PostMapping("/company/authenticate")
+    public ResponseEntity<?> createAuthenticationTokenForCompany(@RequestBody AuthenticationRequest authenticationRequest) throws Exception {
+        try {
+            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authenticationRequest.getUsername(),
+                    authenticationRequest.getPassword()));
+        } catch (BadCredentialsException e) {
+            throw new Exception("Incorrect username or password", e);
         }
-        return "The task was assigned!";
+        final UserDetails userDetails = companyService.loadUserByUsername(authenticationRequest.getUsername());
+        final String jwt = jwtTokenUtil.generateToken(userDetails);
+        return ResponseEntity.ok(new AuthenticationResponse(jwt));
+    }
+
+    @PostMapping("/employee/authenticate")
+    public ResponseEntity<?> createAuthenticationTokenForEmployee(@RequestBody AuthenticationRequest authenticationRequest) throws Exception {
+        try {
+            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authenticationRequest.getUsername(),
+                    authenticationRequest.getPassword()));
+        } catch (BadCredentialsException e) {
+            throw new Exception("Incorrect username or password", e);
+        }
+        final UserDetails userDetails = employeeService.loadUserByUsername(authenticationRequest.getUsername());
+        final String jwt = jwtTokenUtil.generateToken(userDetails);
+        return ResponseEntity.ok(new AuthenticationResponse(jwt));
     }
 }

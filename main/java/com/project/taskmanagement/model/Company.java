@@ -1,10 +1,23 @@
 package com.project.taskmanagement.model;
 
+import lombok.*;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.stereotype.Component;
+
 import javax.persistence.*;
+import java.util.Collection;
+import java.util.Collections;
 
 
 @Entity
-public class Company {
+@Getter
+@Setter
+@Component
+@AllArgsConstructor
+@NoArgsConstructor
+public class Company implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long companyId;
@@ -15,45 +28,34 @@ public class Company {
     @Column(nullable = false)
     private String password;
 
-    public Company() {
-    }
-
     public Company(String name, String username, String password) {
         this.name = name;
         this.username = username;
         this.password = password;
     }
 
-    public Long getCompanyId() {
-        return companyId;
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return Collections.singletonList(new SimpleGrantedAuthority("ROLE_COMPANY"));
     }
 
-    public void setCompanyId(Long companyId) {
-        this.companyId = companyId;
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
     }
 
-    public String getName() {
-        return name;
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
     }
 
-    public String getUsername() {
-        return username;
+    @Override
+    public boolean isEnabled() {
+        return true;
     }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
 }
