@@ -10,6 +10,7 @@ import java.util.List;
 @Repository
 public interface EmployeeRepository extends JpaRepository<Employee, Long> {
     List<Employee> findByUsername(String username);
+
     @Query("select e from Employee e where e.company.companyId = ?1")
     List<Employee> findByCompanyId(Long companyId);
 }

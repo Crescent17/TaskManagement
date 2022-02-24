@@ -5,14 +5,9 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.context.annotation.Bean;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 
 import javax.persistence.*;
 import java.util.Collection;
@@ -23,7 +18,7 @@ import java.util.Collections;
 @Setter
 @JsonIgnoreProperties({"company", "accountNonLocked", "accountNonExpired", "credentialsNonExpired", "authorities", "enabled", "myPasswordEncoder"})
 @AllArgsConstructor
-//@NoArgsConstructor
+@NoArgsConstructor
 public class Employee implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -35,7 +30,7 @@ public class Employee implements UserDetails {
     private String username;
     @Column(nullable = false)
     private String password;
-    @ManyToOne(cascade = CascadeType.ALL,fetch = FetchType.EAGER)
+    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinColumn(name = "company_id", referencedColumnName = "companyId")
     private Company company;
     @Column(nullable = false)
@@ -51,11 +46,6 @@ public class Employee implements UserDetails {
     private Collection<? extends GrantedAuthority> authorities;
     @Transient
     private boolean enabled;
-    @Transient
-    private PasswordEncoder myPasswordEncoder = new BCryptPasswordEncoder();
-
-    public Employee() {
-    }
 
     public Employee(String name, String lastName, String username, String password, String companyName) {
         this.name = name;
@@ -64,12 +54,6 @@ public class Employee implements UserDetails {
         this.password = password;
         this.companyName = companyName;
     }
-
-// TODO Dependency injection of password encoder (doesn't work)
-//    @Autowired
-//    public Employee(PasswordEncoder bCryptPasswordEncoder) {
-//        this.passwordEncoder = bCryptPasswordEncoder;
-//    }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -96,7 +80,4 @@ public class Employee implements UserDetails {
         return true;
     }
 
-    public String getPassword() {
-        return myPasswordEncoder.encode(password);
-    }
 }

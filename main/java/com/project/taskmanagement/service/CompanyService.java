@@ -4,6 +4,7 @@ import com.project.taskmanagement.model.Company;
 import com.project.taskmanagement.model.Employee;
 import com.project.taskmanagement.repository.CompanyRepository;
 import com.project.taskmanagement.repository.EmployeeRepository;
+import com.project.taskmanagement.util.MyPasswordEncoder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -20,12 +21,14 @@ import java.util.Optional;
 public class CompanyService implements UserDetailsService {
     private final CompanyRepository companyRepository;
     private final EmployeeRepository employeeRepository;
+    private final MyPasswordEncoder myPasswordEncoder;
 
 
     @Autowired
-    public CompanyService(CompanyRepository companyRepository, EmployeeRepository employeeRepository) {
+    public CompanyService(CompanyRepository companyRepository, EmployeeRepository employeeRepository, MyPasswordEncoder myPasswordEncoder) {
         this.companyRepository = companyRepository;
         this.employeeRepository = employeeRepository;
+        this.myPasswordEncoder = myPasswordEncoder;
     }
 
     @Override
@@ -41,6 +44,7 @@ public class CompanyService implements UserDetailsService {
         if (!companyRepository.findByUsername(company.getUsername()).isEmpty()) {
             throw new EntityExistsException("Company with this login already exists!");
         }
+        company.setPassword(myPasswordEncoder.getPasswordEncoder().encode(company.getPassword()));
         companyRepository.save(company);
         return "Successful registration!";
     }

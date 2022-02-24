@@ -3,6 +3,7 @@ package com.project.taskmanagement.config;
 import com.project.taskmanagement.filter.JwtRequestFilter;
 import com.project.taskmanagement.service.CompanyService;
 import com.project.taskmanagement.service.EmployeeService;
+import com.project.taskmanagement.util.MyPasswordEncoder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -20,22 +21,22 @@ public class CompanySecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     private final CompanyService companyService;
     private final EmployeeService employeeService;
-//    private final MyPasswordEncoder myPasswordEncoder;
     private final JwtRequestFilter jwtRequestFilter;
+    private final MyPasswordEncoder myPasswordEncoder;
 
     @Autowired
     public CompanySecurityConfiguration(CompanyService companyService, EmployeeService employeeService,
-                                        JwtRequestFilter jwtRequestFilter) {
+                                        JwtRequestFilter jwtRequestFilter, MyPasswordEncoder myPasswordEncoder) {
         this.companyService = companyService;
-//        this.myPasswordEncoder = myPasswordEncoder;
         this.employeeService = employeeService;
         this.jwtRequestFilter = jwtRequestFilter;
+        this.myPasswordEncoder = myPasswordEncoder;
     }
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        auth.userDetailsService(companyService)
-                .and().userDetailsService(employeeService).passwordEncoder(passwordEncoderCompanyBean());
+        auth.userDetailsService(companyService).passwordEncoder(myPasswordEncoder.getPasswordEncoder())
+                .and().userDetailsService(employeeService).passwordEncoder(myPasswordEncoder.getPasswordEncoder());
     }
 
     @Override
@@ -49,7 +50,7 @@ public class CompanySecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .antMatchers("/company/**").hasRole("COMPANY")
                 .antMatchers("/employee/**").hasAnyRole("COMPANY", "EMPLOYEE")
                 .and().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
-//        http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
+        http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
     }
 
     @Override

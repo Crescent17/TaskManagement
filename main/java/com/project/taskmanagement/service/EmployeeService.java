@@ -4,6 +4,7 @@ import com.project.taskmanagement.model.Company;
 import com.project.taskmanagement.model.Employee;
 import com.project.taskmanagement.repository.CompanyRepository;
 import com.project.taskmanagement.repository.EmployeeRepository;
+import com.project.taskmanagement.util.MyPasswordEncoder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -18,11 +19,13 @@ import java.util.Optional;
 public class EmployeeService implements UserDetailsService {
     private final EmployeeRepository employeeRepository;
     private final CompanyRepository companyRepository;
+    private final MyPasswordEncoder myPasswordEncoder;
 
     @Autowired
-    public EmployeeService(EmployeeRepository employeeRepository, CompanyRepository companyRepository) {
+    public EmployeeService(EmployeeRepository employeeRepository, CompanyRepository companyRepository, MyPasswordEncoder myPasswordEncoder) {
         this.employeeRepository = employeeRepository;
         this.companyRepository = companyRepository;
+        this.myPasswordEncoder = myPasswordEncoder;
     }
 
     @Override
@@ -46,9 +49,11 @@ public class EmployeeService implements UserDetailsService {
         }
         Company company = companyRepository.findByNameIgnoreCase(employee.getCompanyName()).get(0);
         employee.setCompany(company);
+        employee.setPassword(myPasswordEncoder.getPasswordEncoder().encode(employee.getPassword()));
         employeeRepository.save(employee);
         return "Successful registration!";
     }
+
 
     public Optional<Employee> findById(Long id) {
         return employeeRepository.findById(id);
