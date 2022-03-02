@@ -2,8 +2,10 @@ package com.project.taskmanagement.service;
 
 import com.project.taskmanagement.model.Company;
 import com.project.taskmanagement.model.Employee;
+import com.project.taskmanagement.model.Task;
 import com.project.taskmanagement.repository.CompanyRepository;
 import com.project.taskmanagement.repository.EmployeeRepository;
+import com.project.taskmanagement.repository.TaskRepository;
 import com.project.taskmanagement.util.MyPasswordEncoder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
@@ -15,6 +17,7 @@ import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityExistsException;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -22,13 +25,19 @@ public class CompanyService implements UserDetailsService {
     private final CompanyRepository companyRepository;
     private final EmployeeRepository employeeRepository;
     private final MyPasswordEncoder myPasswordEncoder;
+    private final TaskRepository taskRepository;
+    private final EmployeeService employeeService;
 
 
     @Autowired
-    public CompanyService(CompanyRepository companyRepository, EmployeeRepository employeeRepository, MyPasswordEncoder myPasswordEncoder) {
+    public CompanyService(CompanyRepository companyRepository, EmployeeRepository employeeRepository,
+                          TaskRepository taskRepository, MyPasswordEncoder myPasswordEncoder,
+                          EmployeeService employeeService) {
         this.companyRepository = companyRepository;
         this.employeeRepository = employeeRepository;
+        this.taskRepository = taskRepository;
         this.myPasswordEncoder = myPasswordEncoder;
+        this.employeeService = employeeService;
     }
 
     @Override
@@ -53,17 +62,13 @@ public class CompanyService implements UserDetailsService {
         return companyRepository.findByUsername(username);
     }
 
-    public String assignTask(Long employeeId, String taskExplanation) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String username = authentication.getName();
-        List<Company> company = companyRepository.findByUsername(username);
-        Optional<Employee> employeeById = employeeRepository.findById(employeeId);
-        if (!company.isEmpty() && employeeById.get().getCompany().getName().equalsIgnoreCase(company.get(0).getName())) {
-            employeeById.orElseThrow(() -> new NullPointerException("Username with this id is not found")).setTask(taskExplanation);
+    public List<Company> findByName(String name) {
+        List<Company> company = companyRepository.findByNameIgnoreCase(name);
+        if (!company.isEmpty()) {
+            return company;
         } else {
-            return "Error!";
+            throw new IllegalStateException("Wrong company name");
         }
-        return "The task was assigned!";
     }
 
     public List<Employee> printInfo() {

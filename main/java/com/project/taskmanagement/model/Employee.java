@@ -10,8 +10,10 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 
 @Entity
 @Getter
@@ -35,7 +37,6 @@ public class Employee implements UserDetails {
     private Company company;
     @Column(nullable = false)
     private String companyName;
-    private String task;
     @Transient
     private boolean accountNonLocked;
     @Transient
@@ -46,6 +47,8 @@ public class Employee implements UserDetails {
     private Collection<? extends GrantedAuthority> authorities;
     @Transient
     private boolean enabled;
+    @OneToMany(mappedBy = "employee")
+    private List<Task> task = new ArrayList<>();
 
     public Employee(String name, String lastName, String username, String password, String companyName) {
         this.name = name;
