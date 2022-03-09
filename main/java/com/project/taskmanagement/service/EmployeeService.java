@@ -38,10 +38,6 @@ public class EmployeeService implements UserDetailsService {
         return employees.get(0);
     }
 
-    public List<Employee> findByCompanyId(Long id) {
-        return employeeRepository.findByCompanyId(id);
-    }
-
     public String register(Employee employee) {
         if (companyRepository.findByNameIgnoreCase(employee.getCompanyName()).isEmpty()) {
             throw new IllegalStateException("There is no such company registered!");
@@ -55,12 +51,14 @@ public class EmployeeService implements UserDetailsService {
         return "Successful registration!";
     }
 
-
-    public Optional<Employee> findById(Long id) {
-        return employeeRepository.findById(id);
-    }
-
-    public void assignTask(Long employeeId, Task task) {
-        employeeRepository.findById(employeeId).get().getTask().add(task);
+    public String assignTask(Long employeeId, Task task) {
+        Optional<Employee> employeeOptional = employeeRepository.findById(employeeId);
+        if (employeeOptional.isPresent()) {
+            Employee employee = employeeOptional.get();
+            employee.getTask().add(task);
+            return "Assigned";
+        } else {
+            throw new IllegalStateException("Wrong id");
+        }
     }
 }

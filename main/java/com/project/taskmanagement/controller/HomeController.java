@@ -39,13 +39,8 @@ public class HomeController {
     }
 
     @GetMapping("/company/info")
-    public List<Employee> company() {
+    public List<Employee> companyInfo() {
         return companyService.printInfo();
-    }
-
-    @GetMapping(value = "/employee")
-    public String user() {
-        return "The page is available for employees and companies";
     }
 
     @PostMapping("/company/register")
