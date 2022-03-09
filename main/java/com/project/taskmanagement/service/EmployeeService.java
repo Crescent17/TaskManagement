@@ -2,6 +2,7 @@ package com.project.taskmanagement.service;
 
 import com.project.taskmanagement.model.Company;
 import com.project.taskmanagement.model.Employee;
+import com.project.taskmanagement.model.Task;
 import com.project.taskmanagement.repository.CompanyRepository;
 import com.project.taskmanagement.repository.EmployeeRepository;
 import com.project.taskmanagement.util.MyPasswordEncoder;
@@ -57,5 +58,9 @@ public class EmployeeService implements UserDetailsService {
 
     public Optional<Employee> findById(Long id) {
         return employeeRepository.findById(id);
+    }
+
+    public void assignTask(Long employeeId, Task task) {
+        employeeRepository.findById(employeeId).get().getTask().add(task);
     }
 }

@@ -48,6 +48,10 @@ public class CompanySecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .antMatchers("/company/authenticate").permitAll()
                 .antMatchers("/employee/authenticate").permitAll()
                 .antMatchers("/company/**").hasRole("COMPANY")
+                .antMatchers("/*/assign/*").hasRole("COMPANY")
+                .antMatchers("/*/update/*").hasRole("COMPANY")
+                .antMatchers("/*/delete/*").hasRole("COMPANY")
+                .antMatchers("/*/reassign/*").hasRole("COMPANY")
                 .antMatchers("/employee/**").hasAnyRole("COMPANY", "EMPLOYEE")
                 .and().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
         http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
