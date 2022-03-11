@@ -72,11 +72,11 @@ public class Employee implements UserDetails {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Employee employee = (Employee) o;
-        return Objects.equals(employeeId, employee.employeeId) && Objects.equals(name, employee.name) && Objects.equals(lastName, employee.lastName) && Objects.equals(username, employee.username) && Objects.equals(password, employee.password) && Objects.equals(company, employee.company) && Objects.equals(companyName, employee.companyName) && Objects.equals(task, employee.task);
+        return Objects.equals(name, employee.name) && Objects.equals(lastName, employee.lastName) && Objects.equals(username, employee.username) && Objects.equals(password, employee.password) && Objects.equals(company, employee.company) && Objects.equals(companyName, employee.companyName) && Objects.equals(task, employee.task);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(employeeId, name, lastName, username, password, company, companyName, task);
+        return Objects.hash(name, lastName, username, password, company, companyName, task);
     }
 }

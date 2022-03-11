@@ -65,11 +65,11 @@ public class Company implements UserDetails {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Company company = (Company) o;
-        return Objects.equals(companyId, company.companyId) && Objects.equals(name, company.name) && Objects.equals(username, company.username) && Objects.equals(password, company.password);
+        return Objects.equals(name, company.name) && Objects.equals(username, company.username) && Objects.equals(password, company.password);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(companyId, name, username, password);
+        return Objects.hash(name, username, password);
     }
 }
