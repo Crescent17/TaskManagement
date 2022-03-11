@@ -8,7 +8,9 @@ import com.project.taskmanagement.service.TaskService;
 import com.project.taskmanagement.util.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -17,7 +19,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import javax.persistence.EntityExistsException;
 
 @RestController
 @Component
@@ -39,18 +41,31 @@ public class HomeController {
     }
 
     @GetMapping("/company/info")
-    public List<Employee> companyInfo() {
-        return companyService.printInfo();
+    public ResponseEntity<?> companyInfo() {
+
+        return new ResponseEntity<>(companyService.printInfo(), HttpStatus.OK);
     }
 
     @PostMapping("/company/register")
-    public String register(@RequestBody Company company) {
-        return companyService.register(company);
+    public ResponseEntity<?> register(@RequestBody Company company) {
+        try {
+            companyService.register(company);
+        } catch (EntityExistsException ex) {
+            return new ResponseEntity<>(HttpStatus.CONFLICT);
+        }
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @PostMapping("/employee/register")
-    public String register(@RequestBody Employee employee) {
-        return employeeService.register(employee);
+    public ResponseEntity<?> register(@RequestBody Employee employee) {
+        try {
+            employeeService.register(employee);
+        } catch (IllegalStateException ex) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        } catch (EntityExistsException ex) {
+            return new ResponseEntity<>(HttpStatus.CONFLICT);
+        }
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @PostMapping("/company/authenticate")
@@ -80,25 +95,55 @@ public class HomeController {
     }
 
     @PostMapping("/{companyName}/assign/{employeeId}")
-    public String assignTask(@PathVariable String companyName, @PathVariable Long employeeId, @RequestBody Task task) {
-        return taskService.assignTask(companyName, employeeId, task);
+    public ResponseEntity<?> assignTask(@PathVariable String companyName, @PathVariable Long employeeId, @RequestBody Task task) {
+        try {
+            taskService.assignTask(companyName, employeeId, task);
+        } catch (NullPointerException ex) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        } catch (RuntimeException ex) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+        return ResponseEntity.ok(HttpStatus.OK);
     }
 
     @PutMapping("/{companyName}/update/{taskId}")
-    public String updateTask(@PathVariable String companyName, @PathVariable Long taskId, @RequestBody Task task) {
-        return taskService.updateTask(companyName, taskId, task);
+    public ResponseEntity<?> updateTask(@PathVariable String companyName, @PathVariable Long taskId, @RequestBody Task task) {
+        try {
+            taskService.updateTask(companyName, taskId, task);
+        } catch (AccessDeniedException ex) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        } catch (NullPointerException ex) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @Transactional
     @DeleteMapping("/{companyName}/delete/{taskId}")
-    public String deleteTask(@PathVariable String companyName, @PathVariable Long taskId) {
-        return taskService.deleteTask(companyName, taskId);
+    public ResponseEntity<?> deleteTask(@PathVariable String companyName, @PathVariable Long taskId) {
+        try {
+            taskService.deleteTask(companyName, taskId);
+        } catch (AccessDeniedException ex) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        } catch (NullPointerException ex) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @Modifying
     @Transactional
     @PutMapping("/{companyName}/reassign/{taskId}/{employeeId}")
-    public String reassignTask(@PathVariable String companyName, @PathVariable Long taskId, @PathVariable Long employeeId) {
-        return taskService.assignToOtherEmployee(companyName, taskId, employeeId);
+    public ResponseEntity<?> reassignTask(@PathVariable String companyName, @PathVariable Long taskId, @PathVariable Long employeeId) {
+        try {
+            taskService.assignToOtherEmployee(companyName, taskId, employeeId);
+        } catch (IllegalStateException ex) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        } catch (NullPointerException ex) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        } catch (AccessDeniedException ex) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 }
