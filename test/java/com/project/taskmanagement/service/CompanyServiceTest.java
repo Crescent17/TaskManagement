@@ -2,12 +2,14 @@ package com.project.taskmanagement.service;
 
 
 import com.project.taskmanagement.model.Company;
+import com.project.taskmanagement.model.Employee;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -77,6 +79,33 @@ class CompanyServiceTest {
     void findByNonExistingName() {
         Assertions.assertThrows(IllegalStateException.class, () -> {
             companyService.findByName("nonexist");
+        });
+    }
+
+    @Test
+    @WithMockUser(username = "nike@gmail.com", password = "123456")
+    void printInfo() {
+        List<Employee> expected = Collections.singletonList(new Employee(1L, "Alex", "Jackson",
+                "alex@gmail.com", "$2a$12$PNkqw7cxNAzILGl3qTFFpOEmLPXJkJ9eeg0dS5O1Nu9qDpLHdoG3.",
+                new Company(3L, "Nike", "nike@gmail.com",
+                        "$2a$12$Jr4fixJKqrIuArmyieSZT.1UJBthIjUS.3XHCbWkpTbRpAIdEXkKu"), "Nike",
+                Collections.emptyList()));
+        List<Employee> actual = companyService.printInfo();
+        Assertions.assertIterableEquals(expected, actual);
+    }
+
+    @Test
+    void printInfoWithoutAuthentication() {
+        Assertions.assertThrows(NullPointerException.class, () -> {
+            companyService.printInfo();
+        });
+    }
+
+    @Test
+    @WithMockUser(username = "weqt@gmail.com", password = "123456")
+    void printInfoForNonExistingCompany() {
+        Assertions.assertThrows(IndexOutOfBoundsException.class, () -> {
+            companyService.printInfo();
         });
     }
 }
