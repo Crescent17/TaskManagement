@@ -1,270 +1,247 @@
 package com.project.taskmanagement.controller;
 
 
+
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.project.taskmanagement.model.Company;
 import com.project.taskmanagement.model.Employee;
 import com.project.taskmanagement.model.Task;
-import org.junit.jupiter.api.Assertions;
+import com.project.taskmanagement.repository.CompanyRepository;
+import com.project.taskmanagement.util.JwtUtil;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.test.context.ContextConfiguration;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.RequestBuilder;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.EntityExistsException;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+@ExtendWith(SpringExtension.class)
 @SpringBootTest
-@ContextConfiguration
+@AutoConfigureMockMvc
 @Transactional
 public class HomeControllerTest {
 
     @Autowired
-    private HomeController homeController;
+    private MockMvc mvc;
     @Autowired
-    private AuthenticationManager authenticationManager;
+    private JwtUtil jwtUtil;
+    @Autowired
+    private CompanyRepository companyRepository;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Test
-    void companyRegister() {
-        String expected = "Successful registration!";
-        String actual = homeController.register(new Company("BMW", "bmw@gmail.com", "123456"));
-        Assertions.assertEquals(expected, actual);
+    void companyRegister() throws Exception {
+        String jsonString = objectMapper.writeValueAsString(new Company("Adidas", "adidas@gmail.com", "123456"));
+        RequestBuilder requestBuilder = MockMvcRequestBuilders.post("/company/register").content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+        mvc.perform(requestBuilder).andExpect(status().isOk()).andReturn();
     }
 
     @Test
-    void registerExistingCompany() {
-        Assertions.assertThrows(EntityExistsException.class, () -> {
-            homeController.register(new Company("Nike", "nike@gmail.com", "123456"));
-        });
+    void registerExistingCompany() throws Exception {
+        String jsonString = objectMapper.writeValueAsString(new Company("Nike", "nike@gmail.com", "123456"));
+        RequestBuilder requestBuilder = MockMvcRequestBuilders.post("/company/register").content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+        mvc.perform(requestBuilder).andExpect(status().isConflict()).andReturn();
     }
 
     @Test
-    void employeeRegister() {
-        String expected = "Successful registration!";
-        String actual = homeController.register(new Employee("Jack", "Lesley",
-                "lesley541124@gmail.com", "123456", "Adidas"));
-        Assertions.assertEquals(expected, actual);
+    void employeeRegister() throws Exception {
+        String jsonString = objectMapper.writeValueAsString(new Employee("Alexey", "Berezin", "berezin@gmail.com",
+                "123456", "Amazon"));
+        RequestBuilder requestBuilder = MockMvcRequestBuilders.post("/employee/register").content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+        mvc.perform(requestBuilder).andExpect(status().isOk()).andReturn();
+    }
+
+
+    @Test
+    void registerEmployeeForNonExistingCompany() throws Exception {
+        String jsonString = objectMapper.writeValueAsString(new Employee("Alexey", "Berezin", "berezin@gmail.com",
+                "123456", "Qtewqt"));
+        RequestBuilder requestBuilder = MockMvcRequestBuilders.post("/employee/register").content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+        mvc.perform(requestBuilder).andExpect(status().isNotFound()).andReturn();
     }
 
     @Test
-    void registerEmployeeForNonExistingCompany() {
-        Assertions.assertThrows(IllegalStateException.class, () -> {
-            homeController.register(new Employee("Anna", "Davies", "davies14@gmail.com", "123456", "weqtqwet"));
-        });
+    void registerExistingEmployee() throws Exception {
+        String jsonString = objectMapper.writeValueAsString(new Employee("Alex", "Jackson", "alex@gmail.com",
+                "123456", "Nike"));
+        RequestBuilder requestBuilder = MockMvcRequestBuilders.post("/employee/register").content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+        mvc.perform(requestBuilder).andExpect(status().isConflict()).andReturn();
     }
 
     @Test
-    void registerExistingEmployee() {
-        Assertions.assertThrows(EntityExistsException.class, () -> {
-            homeController.register(new Employee("Anna", "Davies", "alex@gmail.com", "123456", "Adidas"));
-        });
+    void assignTask() throws Exception {
+        String jwt = jwtUtil.generateToken(companyRepository.findByUsername("nike@gmail.com").get(0));
+        String jsonString = objectMapper.writeValueAsString(new Task("Assigned Task"));
+        RequestBuilder requestBuilder = MockMvcRequestBuilders.post("/nike/assign/1")
+                .header("Authorization", "Bearer " + jwt).content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+        mvc.perform(requestBuilder).andExpect(status().isOk()).andReturn();
     }
 
     @Test
-    void assignTask() {
-        UsernamePasswordAuthenticationToken authReq = new UsernamePasswordAuthenticationToken("adidas@gmail.com", "123456");
-        Authentication authentication = authenticationManager.authenticate(authReq);
-        SecurityContext securityContext = SecurityContextHolder.getContext();
-        securityContext.setAuthentication(authentication);
-        String expected = "Saved";
-        String actual = homeController.assignTask("Adidas", 2L, new Task("Assigned"));
-        Assertions.assertEquals(expected, actual);
+    void assignTaskForEmployeeFromAnotherCompany() throws Exception {
+        String jwt = jwtUtil.generateToken(companyRepository.findByUsername("nike@gmail.com").get(0));
+        String jsonString = objectMapper.writeValueAsString(new Task("Assigned Task"));
+        RequestBuilder requestBuilder = MockMvcRequestBuilders.post("/nike/assign/2")
+                .header("Authorization", "Bearer " + jwt).content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+        mvc.perform(requestBuilder).andExpect(status().isForbidden()).andReturn();
     }
 
     @Test
-    void assignTaskForEmployeeFromAnotherCompany() {
-        UsernamePasswordAuthenticationToken authReq = new UsernamePasswordAuthenticationToken("adidas@gmail.com", "123456");
-        Authentication authentication = authenticationManager.authenticate(authReq);
-        SecurityContext securityContext = SecurityContextHolder.getContext();
-        securityContext.setAuthentication(authentication);
-        String expected = "Employee with such id doesn't belong to this company!";
-        String actual = homeController.assignTask("Adidas", 1L, new Task("Wrong Id"));
-        Assertions.assertEquals(expected, actual);
+    void assignTaskForEmployeeWithWrongId() throws Exception {
+        String jwt = jwtUtil.generateToken(companyRepository.findByUsername("nike@gmail.com").get(0));
+        String jsonString = objectMapper.writeValueAsString(new Task("Assigned Task"));
+        RequestBuilder requestBuilder = MockMvcRequestBuilders.post("/nike/assign/100")
+                .header("Authorization", "Bearer " + jwt).content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+        mvc.perform(requestBuilder).andExpect(status().isNotFound()).andReturn();
     }
 
     @Test
-    void assignTaskForEmployeeWithWrongId() {
-        UsernamePasswordAuthenticationToken authReq = new UsernamePasswordAuthenticationToken("adidas@gmail.com", "123456");
-        Authentication authentication = authenticationManager.authenticate(authReq);
-        SecurityContext securityContext = SecurityContextHolder.getContext();
-        securityContext.setAuthentication(authentication);
-        String expected = "Employee with such id doesn't exist!";
-        String actual = homeController.assignTask("Adidas", 10L, new Task("Wrong Id"));
-        Assertions.assertEquals(expected, actual);
+    void assignTaskForAnotherCompany() throws Exception {
+        String jwt = jwtUtil.generateToken(companyRepository.findByUsername("nike@gmail.com").get(0));
+        String jsonString = objectMapper.writeValueAsString(new Task("Assigned Task"));
+        RequestBuilder requestBuilder = MockMvcRequestBuilders.post("/amazon/assign/1")
+                .header("Authorization", "Bearer " + jwt).content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+        mvc.perform(requestBuilder).andExpect(status().isForbidden()).andReturn();
     }
 
     @Test
-    void assignTaskForAnotherCompany() {
-        UsernamePasswordAuthenticationToken authReq = new UsernamePasswordAuthenticationToken("adidas@gmail.com", "123456");
-        Authentication authentication = authenticationManager.authenticate(authReq);
-        SecurityContext securityContext = SecurityContextHolder.getContext();
-        securityContext.setAuthentication(authentication);
-        String expected = "You don't have permission to assign tasks to users who are not in you company!";
-        String actual = homeController.assignTask("Nike", 2L, new Task("Wrong company"));
-        Assertions.assertEquals(expected, actual);
+    void assignWithoutAuthentication() throws Exception {
+        String jsonString = objectMapper.writeValueAsString(new Task("Assigned Task"));
+        RequestBuilder requestBuilder = MockMvcRequestBuilders.post("/nike/assign/1").content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+        mvc.perform(requestBuilder).andExpect(status().isForbidden()).andReturn();
     }
 
     @Test
-    void assignTaskForNonExistingCompany() {
-        UsernamePasswordAuthenticationToken authReq = new UsernamePasswordAuthenticationToken("adidas@gmail.com", "123456");
-        Authentication authentication = authenticationManager.authenticate(authReq);
-        SecurityContext securityContext = SecurityContextHolder.getContext();
-        securityContext.setAuthentication(authentication);
-        Assertions.assertThrows(IllegalStateException.class, () -> {
-            homeController.assignTask("Qtqwet", 2L, new Task("Wrong company"));
-        });
+    void updateTask() throws Exception {
+        String jwt = jwtUtil.generateToken(companyRepository.findByUsername("nike@gmail.com").get(0));
+        String jsonString = objectMapper.writeValueAsString(new Task("Assigned Task"));
+        RequestBuilder requestBuilder = MockMvcRequestBuilders.put("/nike/update/1")
+                .header("Authorization", "Bearer " + jwt).content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+        mvc.perform(requestBuilder).andExpect(status().isOk()).andReturn();
     }
 
     @Test
-    void assignWithoutAuthentication() {
-        Assertions.assertThrows(NullPointerException.class, () -> {
-            homeController.assignTask("Adidas", 2L, new Task("No authentication"));
-        });
+    void updateTaskWithWrongId() throws Exception {
+        String jwt = jwtUtil.generateToken(companyRepository.findByUsername("nike@gmail.com").get(0));
+        String jsonString = objectMapper.writeValueAsString(new Task("Assigned Task"));
+        RequestBuilder requestBuilder = MockMvcRequestBuilders.post("/nike/assign/10")
+                .header("Authorization", "Bearer " + jwt).content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+        mvc.perform(requestBuilder).andExpect(status().isNotFound()).andReturn();
     }
 
     @Test
-    void updateTask() {
-        UsernamePasswordAuthenticationToken authReq = new UsernamePasswordAuthenticationToken("adidas@gmail.com", "123456");
-        Authentication authentication = authenticationManager.authenticate(authReq);
-        SecurityContext securityContext = SecurityContextHolder.getContext();
-        securityContext.setAuthentication(authentication);
-        String expected = "Changed!";
-        String actual = homeController.updateTask("Adidas", 2L, new Task("Updated"));
-        Assertions.assertEquals(expected, actual);
+    void updateTaskForAnotherCompany() throws Exception {
+        String jwt = jwtUtil.generateToken(companyRepository.findByUsername("nike@gmail.com").get(0));
+        String jsonString = objectMapper.writeValueAsString(new Task("Assigned Task"));
+        RequestBuilder requestBuilder = MockMvcRequestBuilders.post("/amazon/assign/1")
+                .header("Authorization", "Bearer " + jwt).content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+        mvc.perform(requestBuilder).andExpect(status().isForbidden()).andReturn();
     }
 
     @Test
-    void updateTaskWithWrongId() {
-        UsernamePasswordAuthenticationToken authReq = new UsernamePasswordAuthenticationToken("adidas@gmail.com", "123456");
-        Authentication authentication = authenticationManager.authenticate(authReq);
-        SecurityContext securityContext = SecurityContextHolder.getContext();
-        securityContext.setAuthentication(authentication);
-        String expected = "The task with such id is not found!";
-        String actual = homeController.updateTask("Adidas", 10L, new Task("Wrong task Id"));
-        Assertions.assertEquals(expected, actual);
+    void updateWithoutAuthentication() throws Exception {
+        String jsonString = objectMapper.writeValueAsString(new Task("Assigned Task"));
+        RequestBuilder requestBuilder = MockMvcRequestBuilders.post("/nike/assign/1").content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+        mvc.perform(requestBuilder).andExpect(status().isForbidden()).andReturn();
     }
 
     @Test
-    void updateTaskForAnotherCompany() {
-        UsernamePasswordAuthenticationToken authReq = new UsernamePasswordAuthenticationToken("adidas@gmail.com", "123456");
-        Authentication authentication = authenticationManager.authenticate(authReq);
-        SecurityContext securityContext = SecurityContextHolder.getContext();
-        securityContext.setAuthentication(authentication);
-        String expected = "You cannot update task for this company!";
-        String actual = homeController.updateTask("Nike", 1L, new Task("Qwrq"));
-        Assertions.assertEquals(expected, actual);
+    void deleteTask() throws Exception {
+        String jwt = jwtUtil.generateToken(companyRepository.findByUsername("nike@gmail.com").get(0));
+        RequestBuilder requestBuilder = MockMvcRequestBuilders.delete("/nike/delete/1")
+                .header("Authorization", "Bearer " + jwt);
+        mvc.perform(requestBuilder).andExpect(status().isOk()).andReturn();
     }
 
     @Test
-    void updateWithoutAuthentication() {
-        Assertions.assertThrows(NullPointerException.class, () -> {
-            homeController.updateTask("Adidas", 5L, new Task("No authentication"));
-        });
+    void deleteTaskWithWrongId() throws Exception {
+        String jwt = jwtUtil.generateToken(companyRepository.findByUsername("nike@gmail.com").get(0));
+        RequestBuilder requestBuilder = MockMvcRequestBuilders.delete("/nike/delete/10")
+                .header("Authorization", "Bearer " + jwt);
+        mvc.perform(requestBuilder).andExpect(status().isNotFound()).andReturn();
     }
 
     @Test
-    void deleteTask() {
-        UsernamePasswordAuthenticationToken authReq = new UsernamePasswordAuthenticationToken("adidas@gmail.com", "123456");
-        Authentication authentication = authenticationManager.authenticate(authReq);
-        SecurityContext securityContext = SecurityContextHolder.getContext();
-        securityContext.setAuthentication(authentication);
-        String expected = "Deleted!";
-        String actual = homeController.deleteTask("Adidas", 1L);
-        Assertions.assertEquals(expected, actual);
+    void deleteTaskForAnotherCompany() throws Exception {
+        String jwt = jwtUtil.generateToken(companyRepository.findByUsername("nike@gmail.com").get(0));
+        RequestBuilder requestBuilder = MockMvcRequestBuilders.delete("/amazon/delete/2")
+                .header("Authorization", "Bearer " + jwt);
+        mvc.perform(requestBuilder).andExpect(status().isForbidden()).andReturn();
     }
 
     @Test
-    void deleteTaskWithWrongId() {
-        UsernamePasswordAuthenticationToken authReq = new UsernamePasswordAuthenticationToken("adidas@gmail.com", "123456");
-        Authentication authentication = authenticationManager.authenticate(authReq);
-        SecurityContext securityContext = SecurityContextHolder.getContext();
-        securityContext.setAuthentication(authentication);
-        String expected = "No task with such id!";
-        String actual = homeController.deleteTask("Adidas", 10L);
-        Assertions.assertEquals(expected, actual);
+    void deleteWithoutAuthentication() throws Exception {
+        RequestBuilder requestBuilder = MockMvcRequestBuilders.delete("/nike/delete/1");
+        mvc.perform(requestBuilder).andExpect(status().isForbidden()).andReturn();
     }
 
     @Test
-    void deleteTaskForAnotherCompany() {
-        UsernamePasswordAuthenticationToken authReq = new UsernamePasswordAuthenticationToken("adidas@gmail.com", "123456");
-        Authentication authentication = authenticationManager.authenticate(authReq);
-        SecurityContext securityContext = SecurityContextHolder.getContext();
-        securityContext.setAuthentication(authentication);
-        String expected = "You cannot delete task for this company!";
-        String actual = homeController.deleteTask("Nike", 3L);
-        Assertions.assertEquals(expected, actual);
+    void reassignTask() throws Exception {
+        String jwt = jwtUtil.generateToken(companyRepository.findByUsername("nike@gmail.com").get(0));
+        String jsonString = objectMapper.writeValueAsString(new Task("Assigned Task"));
+        RequestBuilder requestBuilder = MockMvcRequestBuilders.put("/nike/reassign/1/4")
+                .header("Authorization", "Bearer " + jwt).content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+        mvc.perform(requestBuilder).andExpect(status().isOk()).andReturn();
     }
 
     @Test
-    void deleteWithoutAuthentication() {
-        Assertions.assertThrows(NullPointerException.class, () -> {
-            homeController.deleteTask("Adidas", 5L);
-        });
+    void reassignTaskForEmployeeFromAnotherCompany() throws Exception {
+        String jwt = jwtUtil.generateToken(companyRepository.findByUsername("nike@gmail.com").get(0));
+        String jsonString = objectMapper.writeValueAsString(new Task("Assigned Task"));
+        RequestBuilder requestBuilder = MockMvcRequestBuilders.put("/amazon/reassign/1/3")
+                .header("Authorization", "Bearer " + jwt).content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+        mvc.perform(requestBuilder).andExpect(status().isForbidden()).andReturn();
     }
 
     @Test
-    void reassignTask() {
-        UsernamePasswordAuthenticationToken authReq = new UsernamePasswordAuthenticationToken("adidas@gmail.com", "123456");
-        Authentication authentication = authenticationManager.authenticate(authReq);
-        SecurityContext securityContext = SecurityContextHolder.getContext();
-        securityContext.setAuthentication(authentication);
-        String expected = "The task was reassigned!";
-        String actual = homeController.reassignTask("Adidas", 1L, 3L);
-        Assertions.assertEquals(expected, actual);
+    void reassignTaskForWrongEmployeeId() throws Exception {
+        String jwt = jwtUtil.generateToken(companyRepository.findByUsername("nike@gmail.com").get(0));
+        String jsonString = objectMapper.writeValueAsString(new Task("Assigned Task"));
+        RequestBuilder requestBuilder = MockMvcRequestBuilders.put("/nike/reassign/1/10")
+                .header("Authorization", "Bearer " + jwt).content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+        mvc.perform(requestBuilder).andExpect(status().isNotFound()).andReturn();
     }
 
     @Test
-    void reassignTaskForEmployeeFromAnotherCompany() {
-        UsernamePasswordAuthenticationToken authReq = new UsernamePasswordAuthenticationToken("adidas@gmail.com", "123456");
-        Authentication authentication = authenticationManager.authenticate(authReq);
-        SecurityContext securityContext = SecurityContextHolder.getContext();
-        securityContext.setAuthentication(authentication);
-        String expected = "This user doesn't belong to Adidas company";
-        String actual = homeController.reassignTask("Adidas", 2L, 1L);
-        Assertions.assertEquals(expected, actual);
+    void reassignWrongTaskId() throws Exception {
+        String jwt = jwtUtil.generateToken(companyRepository.findByUsername("nike@gmail.com").get(0));
+        String jsonString = objectMapper.writeValueAsString(new Task("Assigned Task"));
+        RequestBuilder requestBuilder = MockMvcRequestBuilders.put("/nike/reassign/10/1")
+                .header("Authorization", "Bearer " + jwt).content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+        mvc.perform(requestBuilder).andExpect(status().isNotFound()).andReturn();
     }
 
     @Test
-    void reassignTaskForWrongEmployeeId() {
-        UsernamePasswordAuthenticationToken authReq = new UsernamePasswordAuthenticationToken("adidas@gmail.com", "123456");
-        Authentication authentication = authenticationManager.authenticate(authReq);
-        SecurityContext securityContext = SecurityContextHolder.getContext();
-        securityContext.setAuthentication(authentication);
-        String expected = "Wrong employee id";
-        String actual = homeController.reassignTask("Adidas", 1L, 10L);
-        Assertions.assertEquals(expected, actual);
-    }
-
-    @Test
-    void reassignWrongTaskId() {
-        UsernamePasswordAuthenticationToken authReq = new UsernamePasswordAuthenticationToken("adidas@gmail.com", "123456");
-        Authentication authentication = authenticationManager.authenticate(authReq);
-        SecurityContext securityContext = SecurityContextHolder.getContext();
-        securityContext.setAuthentication(authentication);
-        String expected = "Wrong task id";
-        String actual = homeController.reassignTask("Adidas", 10L, 2L);
-        Assertions.assertEquals(expected, actual);
-    }
-
-    @Test
-    void reassignWithWrongCompanyName() {
-        UsernamePasswordAuthenticationToken authReq = new UsernamePasswordAuthenticationToken("adidas@gmail.com", "123456");
-        Authentication authentication = authenticationManager.authenticate(authReq);
-        SecurityContext securityContext = SecurityContextHolder.getContext();
-        securityContext.setAuthentication(authentication);
-        String expected = "Wrong company name";
-        String actual = homeController.reassignTask("Nike", 4L, 2L);
-        Assertions.assertEquals(expected, actual);
-    }
-
-    @Test
-    void reassignWithoutAuthentication() {
-        Assertions.assertThrows(NullPointerException.class, () -> {
-            homeController.reassignTask("Adidas", 2L, 2L);
-        });
+    void reassignWithoutAuthentication() throws Exception {
+        String jsonString = objectMapper.writeValueAsString(new Task("Assigned Task"));
+        RequestBuilder requestBuilder = MockMvcRequestBuilders.put("/nike/reassign/1/3").content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+        mvc.perform(requestBuilder).andExpect(status().isForbidden()).andReturn();
     }
 }
