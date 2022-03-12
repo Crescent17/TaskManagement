@@ -42,7 +42,6 @@ public class HomeController {
 
     @GetMapping("/company/info")
     public ResponseEntity<?> companyInfo() {
-
         return new ResponseEntity<>(companyService.printInfo(), HttpStatus.OK);
     }
 
@@ -137,9 +136,7 @@ public class HomeController {
     public ResponseEntity<?> reassignTask(@PathVariable String companyName, @PathVariable Long taskId, @PathVariable Long employeeId) {
         try {
             taskService.assignToOtherEmployee(companyName, taskId, employeeId);
-        } catch (IllegalStateException ex) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        } catch (NullPointerException ex) {
+        } catch (IllegalStateException | NullPointerException ex) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         } catch (AccessDeniedException ex) {
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
