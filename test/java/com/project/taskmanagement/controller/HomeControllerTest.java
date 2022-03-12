@@ -4,6 +4,7 @@ package com.project.taskmanagement.controller;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.project.taskmanagement.model.AuthenticationRequest;
 import com.project.taskmanagement.model.Company;
 import com.project.taskmanagement.model.Employee;
 import com.project.taskmanagement.model.Task;
@@ -79,6 +80,38 @@ public class HomeControllerTest {
         RequestBuilder requestBuilder = MockMvcRequestBuilders.post("/employee/register").content(jsonString)
                 .contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
         mvc.perform(requestBuilder).andExpect(status().isConflict()).andReturn();
+    }
+
+    @Test
+    void createAuthenticationTokenForCompany() throws Exception {
+        String jsonString = objectMapper.writeValueAsString(new AuthenticationRequest("nike@gmail.com", "123456"));
+        RequestBuilder requestBuilder = MockMvcRequestBuilders.post("/company/authenticate").content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+        mvc.perform(requestBuilder).andExpect(status().isOk()).andReturn();
+    }
+
+    @Test
+    void createAuthenticationTokenForWrongCompany() throws Exception {
+        String jsonString = objectMapper.writeValueAsString(new AuthenticationRequest("qweywey@gmail.com", "123456"));
+        RequestBuilder requestBuilder = MockMvcRequestBuilders.post("/company/authenticate").content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+        mvc.perform(requestBuilder).andExpect(status().isForbidden()).andReturn();
+    }
+
+    @Test
+    void createAuthenticationTokenForEmployee() throws Exception {
+        String jsonString = objectMapper.writeValueAsString(new AuthenticationRequest("alex@gmail.com", "123456"));
+        RequestBuilder requestBuilder = MockMvcRequestBuilders.post("/employee/authenticate").content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+        mvc.perform(requestBuilder).andExpect(status().isOk()).andReturn();
+    }
+
+    @Test
+    void createAuthenticationTokenForWrongEmployee() throws Exception {
+        String jsonString = objectMapper.writeValueAsString(new AuthenticationRequest("qweywey@gmail.com", "123456"));
+        RequestBuilder requestBuilder = MockMvcRequestBuilders.post("/employee/authenticate").content(jsonString)
+                .contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON);
+        mvc.perform(requestBuilder).andExpect(status().isForbidden()).andReturn();
     }
 
     @Test
