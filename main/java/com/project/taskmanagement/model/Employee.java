@@ -1,19 +1,13 @@
 package com.project.taskmanagement.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.persistence.*;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 @Entity
 @Getter
@@ -32,22 +26,12 @@ public class Employee implements UserDetails {
     private String username;
     @Column(nullable = false)
     private String password;
-    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @ManyToOne(cascade = CascadeType.MERGE, fetch = FetchType.LAZY)
     @JoinColumn(name = "company_id", referencedColumnName = "companyId")
     private Company company;
     @Column(nullable = false)
     private String companyName;
-    @Transient
-    private boolean accountNonLocked;
-    @Transient
-    private boolean accountNonExpired;
-    @Transient
-    private boolean credentialsNonExpired;
-    @Transient
-    private Collection<? extends GrantedAuthority> authorities;
-    @Transient
-    private boolean enabled;
-    @OneToMany(mappedBy = "employee")
+    @OneToMany(mappedBy = "employee", fetch = FetchType.EAGER)
     private List<Task> task = new ArrayList<>();
 
     public Employee(String name, String lastName, String username, String password, String companyName) {
@@ -83,4 +67,16 @@ public class Employee implements UserDetails {
         return true;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Employee employee = (Employee) o;
+        return Objects.equals(name, employee.name) && Objects.equals(lastName, employee.lastName) && Objects.equals(username, employee.username) && Objects.equals(password, employee.password) && Objects.equals(company, employee.company) && Objects.equals(companyName, employee.companyName) && Objects.equals(task, employee.task);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name, lastName, username, password, company, companyName, task);
+    }
 }

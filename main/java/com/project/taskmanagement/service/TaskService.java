@@ -32,10 +32,6 @@ public class TaskService {
         this.employeeService = employeeService;
     }
 
-    public void assignTask(Task task) {
-        taskRepository.save(task);
-    }
-
     public String assignTask(String companyName, Long employeeId, Task task) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         List<Company> companyOptional = companyService.findByName(companyName);
@@ -60,28 +56,27 @@ public class TaskService {
         return "The company with such name doesn't exist";
     }
 
-    public String deleteTask(String companyName, Long id) {
+    public String deleteTask(String companyName, Long taskId) {
         if (companyValidation(companyName)) {
-            if (taskRepository.findById(id).isPresent()) {
-                taskRepository.deleteByTaskId(id);
+            if (taskRepository.findById(taskId).isPresent()) {
+                taskRepository.deleteByTaskId(taskId);
                 return "Deleted!";
             }
             return "No task with such id!";
         }
-        return "Error!";
+        return "You cannot delete task for this company!";
     }
 
     public String updateTask(String companyName, Long taskId, Task task) {
         if (companyValidation(companyName)) {
             Optional<Task> oldTaskOptional = taskRepository.findById(taskId);
             if (oldTaskOptional.isPresent()) {
-                Task oldTask = oldTaskOptional.get();
                 taskRepository.updateByTaskId(taskId, task.getExplanation());
                 return "Changed!";
             }
             return "The task with such id is not found!";
         }
-        return "Error";
+        return "You cannot update task for this company!";
     }
 
     public String assignToOtherEmployee(String companyName, Long taskId, Long employeeId) {

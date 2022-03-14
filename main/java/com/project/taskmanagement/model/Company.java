@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 import javax.persistence.*;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Objects;
 
 
 @Entity
@@ -57,5 +58,18 @@ public class Company implements UserDetails {
     @Override
     public boolean isEnabled() {
         return true;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Company company = (Company) o;
+        return Objects.equals(name, company.name) && Objects.equals(username, company.username) && Objects.equals(password, company.password);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name, username, password);
     }
 }
