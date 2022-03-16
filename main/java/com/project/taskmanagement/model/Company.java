@@ -1,5 +1,6 @@
 package com.project.taskmanagement.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -18,6 +19,7 @@ import java.util.Objects;
 @Component
 @AllArgsConstructor
 @NoArgsConstructor
+@JsonIgnoreProperties({"accountNonLocked", "accountNonExpired", "credentialsNonExpired", "authorities", "enabled"})
 public class Company implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
