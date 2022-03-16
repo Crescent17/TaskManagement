@@ -10,16 +10,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
-import javax.persistence.EntityExistsException;
 
 @RestController
 @Component
@@ -47,47 +44,27 @@ public class HomeController {
 
     @PostMapping("/company/register")
     public ResponseEntity<?> register(@RequestBody Company company) {
-        try {
-            companyService.register(company);
-        } catch (EntityExistsException ex) {
-            return new ResponseEntity<>(HttpStatus.CONFLICT);
-        }
-        return new ResponseEntity<>(HttpStatus.OK);
+        return new ResponseEntity<>(companyService.register(company), HttpStatus.OK);
     }
 
     @PostMapping("/employee/register")
     public ResponseEntity<?> register(@RequestBody Employee employee) {
-        try {
-            employeeService.register(employee);
-        } catch (IllegalStateException ex) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        } catch (EntityExistsException ex) {
-            return new ResponseEntity<>(HttpStatus.CONFLICT);
-        }
-        return new ResponseEntity<>(HttpStatus.OK);
+        return new ResponseEntity<>(employeeService.register(employee), HttpStatus.OK);
     }
 
     @PostMapping("/company/authenticate")
-    public ResponseEntity<?> createAuthenticationTokenForCompany(@RequestBody AuthenticationRequest authenticationRequest) throws Exception {
-        try {
-            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authenticationRequest.getUsername(),
-                    authenticationRequest.getPassword()));
-        } catch (BadCredentialsException e) {
-            throw new Exception("Incorrect username or password", e);
-        }
+    public ResponseEntity<?> createAuthenticationTokenForCompany(@RequestBody AuthenticationRequest authenticationRequest) {
+        authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authenticationRequest.getUsername(),
+                authenticationRequest.getPassword()));
         final UserDetails userDetails = companyService.loadUserByUsername(authenticationRequest.getUsername());
         final String jwt = jwtTokenUtil.generateToken(userDetails);
         return ResponseEntity.ok(new AuthenticationResponse(jwt));
     }
 
     @PostMapping("/employee/authenticate")
-    public ResponseEntity<?> createAuthenticationTokenForEmployee(@RequestBody AuthenticationRequest authenticationRequest) throws Exception {
-        try {
-            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authenticationRequest.getUsername(),
-                    authenticationRequest.getPassword()));
-        } catch (BadCredentialsException e) {
-            throw new Exception("Incorrect username or password", e);
-        }
+    public ResponseEntity<?> createAuthenticationTokenForEmployee(@RequestBody AuthenticationRequest authenticationRequest) {
+        authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authenticationRequest.getUsername(),
+                authenticationRequest.getPassword()));
         final UserDetails userDetails = employeeService.loadUserByUsername(authenticationRequest.getUsername());
         final String jwt = jwtTokenUtil.generateToken(userDetails);
         return ResponseEntity.ok(new AuthenticationResponse(jwt));
@@ -95,52 +72,87 @@ public class HomeController {
 
     @PostMapping("/{companyName}/assign/{employeeId}")
     public ResponseEntity<?> assignTask(@PathVariable String companyName, @PathVariable Long employeeId, @RequestBody Task task) {
-        try {
-            taskService.assignTask(companyName, employeeId, task);
-        } catch (NullPointerException ex) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        } catch (RuntimeException ex) {
-            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-        }
-        return ResponseEntity.ok(HttpStatus.OK);
+        return new ResponseEntity<>(taskService.assignTask(companyName, employeeId, task), HttpStatus.OK);
     }
 
     @PutMapping("/{companyName}/update/{taskId}")
     public ResponseEntity<?> updateTask(@PathVariable String companyName, @PathVariable Long taskId, @RequestBody Task task) {
-        try {
-            taskService.updateTask(companyName, taskId, task);
-        } catch (AccessDeniedException ex) {
-            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-        } catch (NullPointerException ex) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
-        return new ResponseEntity<>(HttpStatus.OK);
+        return new ResponseEntity<>(taskService.updateTask(companyName, taskId, task), HttpStatus.OK);
     }
 
     @Transactional
     @DeleteMapping("/{companyName}/delete/{taskId}")
     public ResponseEntity<?> deleteTask(@PathVariable String companyName, @PathVariable Long taskId) {
-        try {
-            taskService.deleteTask(companyName, taskId);
-        } catch (AccessDeniedException ex) {
-            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-        } catch (NullPointerException ex) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
-        return new ResponseEntity<>(HttpStatus.OK);
+        return new ResponseEntity<>(taskService.deleteTask(companyName, taskId), HttpStatus.OK);
     }
 
     @Modifying
     @Transactional
     @PutMapping("/{companyName}/reassign/{taskId}/{employeeId}")
     public ResponseEntity<?> reassignTask(@PathVariable String companyName, @PathVariable Long taskId, @PathVariable Long employeeId) {
-        try {
-            taskService.assignToOtherEmployee(companyName, taskId, employeeId);
-        } catch (IllegalStateException | NullPointerException ex) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        } catch (AccessDeniedException ex) {
-            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-        }
-        return new ResponseEntity<>(HttpStatus.OK);
+        return new ResponseEntity<>(taskService.assignToOtherEmployee(companyName, taskId, employeeId), HttpStatus.OK);
+    }
+
+    @Modifying
+    @Transactional
+    @PutMapping("/company/changeName/{previousName}/{newName}")
+    public ResponseEntity<?> changeCompanyName(@PathVariable String previousName, @PathVariable String newName) {
+        return new ResponseEntity<>(companyService.changeCompanyName(previousName, newName), HttpStatus.OK);
+    }
+
+    @Modifying
+    @Transactional
+    @PutMapping("/company/changeUsername/{previousUsername}/{newUsername}")
+    public ResponseEntity<?> changeCompanyUsername(@PathVariable String previousUsername, @PathVariable String newUsername) {
+        return new ResponseEntity<>(companyService.changeCompanyUsername(previousUsername, newUsername), HttpStatus.OK);
+    }
+
+    @Modifying
+    @Transactional
+    @PutMapping("/{companyName}/changePassword/{previousPassword}/{newPassword}")
+    public ResponseEntity<?> changeCompanyPassword(@PathVariable String companyName, @PathVariable String previousPassword,
+                                                   @PathVariable String newPassword) {
+        return new ResponseEntity<>(companyService.changeCompanyPassword(companyName, previousPassword, newPassword), HttpStatus.OK);
+    }
+
+    @Modifying
+    @Transactional
+    @PutMapping("/employee/changeName/{previousName}/{newName}")
+    public ResponseEntity<?> changeEmployeeName(@PathVariable String previousName, @PathVariable String newName) {
+        return new ResponseEntity<>(employeeService.changeEmployeeName(previousName, newName), HttpStatus.OK);
+    }
+
+    @Modifying
+    @Transactional
+    @PutMapping("/employee/changeLastName/{previousLastName}/{newLastName}")
+    public ResponseEntity<?> changeEmployeeLastName(@PathVariable String previousLastName, @PathVariable String newLastName) {
+        return new ResponseEntity<>(employeeService.changeEmployeeLastName(previousLastName, newLastName), HttpStatus.OK);
+    }
+
+    @Modifying
+    @Transactional
+    @PutMapping("/employee/changeUsername/{previousUsername}/{newUsername}")
+    public ResponseEntity<?> changeEmployeeUsername(@PathVariable String previousUsername, @PathVariable String newUsername) {
+        return new ResponseEntity<>(employeeService.changeEmployeeUsername(previousUsername, newUsername), HttpStatus.OK);
+    }
+
+    @Modifying
+    @Transactional
+    @PutMapping("/employee/changePassword/{previousPassword}/{newPassword}")
+    public ResponseEntity<?> changeEmployeePassword(@PathVariable String previousPassword, @PathVariable String newPassword) {
+        return new ResponseEntity<>(employeeService.changeEmployeePassword(previousPassword, newPassword), HttpStatus.OK);
+    }
+
+    @Modifying
+    @DeleteMapping("/{companyName}/deleteEmployee/{employeeUsername}")
+    public ResponseEntity<?> deleteEmployee(@PathVariable String companyName, @PathVariable String employeeUsername) {
+        return new ResponseEntity<>(companyService.deleteEmployee(companyName, employeeUsername), HttpStatus.OK);
+    }
+
+    @Modifying
+    @Transactional
+    @PutMapping("/employee/changeCompany/{companyName}")
+    public ResponseEntity<?> changeCompany(@PathVariable String companyName) {
+        return new ResponseEntity<>(employeeService.changeCompany(companyName), HttpStatus.OK);
     }
 }
