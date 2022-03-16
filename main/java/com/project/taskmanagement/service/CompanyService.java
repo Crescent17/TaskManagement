@@ -1,8 +1,8 @@
 package com.project.taskmanagement.service;
 
+import com.project.taskmanagement.exception.*;
 import com.project.taskmanagement.model.Company;
 import com.project.taskmanagement.model.Employee;
-import com.project.taskmanagement.model.Task;
 import com.project.taskmanagement.repository.CompanyRepository;
 import com.project.taskmanagement.repository.EmployeeRepository;
 import com.project.taskmanagement.repository.TaskRepository;
@@ -17,8 +17,6 @@ import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityExistsException;
 import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
 
 @Service
 public class CompanyService implements UserDetailsService {
@@ -67,7 +65,7 @@ public class CompanyService implements UserDetailsService {
         if (!company.isEmpty()) {
             return company;
         } else {
-            throw new IllegalStateException("Wrong company name");
+            throw new WrongCompanyName();
         }
     }
 
@@ -76,5 +74,67 @@ public class CompanyService implements UserDetailsService {
         String username = authentication.getName();
         Company company = companyRepository.findByUsername(username).get(0);
         return employeeRepository.findByCompanyId(company.getCompanyId());
+    }
+
+    public String changeCompanyName(String previousName, String newName) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Company company = companyRepository.findByUsername(authentication.getName()).get(0);
+        if (company.getName().equalsIgnoreCase(previousName)) {
+            company.setName(newName);
+            return "Changed!";
+        }
+        throw new WrongCompanyName();
+    }
+
+    public String changeCompanyUsername(String previousUsername, String newUsername) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Company company = companyRepository.findByUsername(authentication.getName()).get(0);
+        if (company.getUsername().equalsIgnoreCase(previousUsername)) {
+            if (companyRepository.findByUsername(newUsername).isEmpty()) {
+                company.setUsername(newUsername);
+                return "Changed!";
+            }
+            throw new EntityExistsException();
+        }
+        throw new NoPermission();
+    }
+
+    public String changeCompanyPassword(String companyName, String previousPassword, String newPassword) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        List<Company> companyOptional = companyRepository.findByUsername(authentication.getName());
+        if (!companyOptional.isEmpty()) {
+            Company company = companyOptional.get(0);
+            if (company.getName().equalsIgnoreCase(companyName)) {
+                if (myPasswordEncoder.getPasswordEncoder().matches(previousPassword, company.getPassword())) {
+                    company.setPassword(myPasswordEncoder.getPasswordEncoder().encode(newPassword));
+                    return "Changed!";
+                }
+                throw new PasswordsDontMatch();
+            }
+            throw new NoPermission();
+        }
+        throw new AuthorizationException();
+    }
+
+    public String deleteEmployee(String companyName, String employeeUsername) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        List<Company> companyOptional = companyRepository.findByUsername(authentication.getName());
+        if (!companyOptional.isEmpty()) {
+            Company company = companyOptional.get(0);
+            if (company.getName().equalsIgnoreCase(companyName)) {
+                List<Employee> employeeOptional = employeeRepository.findByUsername(employeeUsername);
+                if (!employeeOptional.isEmpty()) {
+                    Employee employee = employeeOptional.get(0);
+                    if (employee.getCompanyName().equalsIgnoreCase(companyName)) {
+                        employeeRepository.delete(employee);
+                        return "Deleted!";
+                    }
+                    throw new NoPermission();
+                }
+                throw new WrongUsername();
+            }
+            throw new NoPermission();
+        }
+        throw new AuthorizationException();
     }
 }
