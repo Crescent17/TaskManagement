@@ -1,15 +1,18 @@
 package com.project.taskmanagement.service;
 
 
+import com.project.taskmanagement.exception.*;
 import com.project.taskmanagement.model.Task;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.transaction.annotation.Transactional;
+
+
 
 @SpringBootTest
 @ContextConfiguration
@@ -30,31 +33,31 @@ public class TaskServiceTest {
     @Test
     @WithMockUser(username = "nike@gmail.com", password = "123456")
     void assignTaskForEmployeeFromAnotherCompany() {
-        String expected = "Employee with such id doesn't belong to this company!";
-        String actual = taskService.assignTask("Nike", 2L, new Task("Another company"));
-        Assertions.assertEquals(expected, actual);
+        Assertions.assertThrows(NoPermission.class, () -> {
+            taskService.assignTask("amazon", 1L, new Task("Qwe"));
+        });
     }
 
     @Test
     @WithMockUser(username = "nike@gmail.com", password = "123456")
     void assignTaskForEmployeeWithWrongId() {
-        String expected = "Employee with such id doesn't exist!";
-        String actual = taskService.assignTask("Nike", 10L, new Task("Wrong ID"));
-        Assertions.assertEquals(expected, actual);
+        Assertions.assertThrows(WrongEmployeeId.class, () -> {
+            taskService.assignTask("nike", 10L, new Task("Qwe"));
+        });
     }
 
     @Test
     @WithMockUser(username = "nike@gmail.com", password = "123456")
     void assignTaskWithoutPermission() {
-        String expected = "You don't have permission to assign tasks to users who are not in you company!";
-        String actual = taskService.assignTask("Amazon", 2L, new Task("Without permission"));
-        Assertions.assertEquals(expected, actual);
+        Assertions.assertThrows(NoPermission.class, () -> {
+            taskService.assignTask("amazon", 5L, new Task("Qwe"));
+        });
     }
 
     @Test
     @WithMockUser(username = "nike@gmail.com", password = "123456")
     void assignTaskForWrongCompany() {
-        Assertions.assertThrows(IllegalStateException.class, () -> {
+        Assertions.assertThrows(WrongCompanyName.class, () -> {
             taskService.assignTask("Qwer", 4L, new Task("Wrong company"));
         });
     }
@@ -77,15 +80,15 @@ public class TaskServiceTest {
     @Test
     @WithMockUser(username = "nike@gmail.com", password = "123456")
     void deleteNonExistingTask() {
-        String expected = "No task with such id!";
-        String actual = taskService.deleteTask("Nike", 10L);
-        Assertions.assertEquals(expected, actual);
+        Assertions.assertThrows(WrongTaskId.class, () -> {
+            taskService.deleteTask("nike", 10L);
+        });
     }
 
     @Test
     @WithMockUser(username = "nike@gmail.com", password = "123456")
     void deleteTaskForWrongCompany() {
-        Assertions.assertThrows(IllegalStateException.class, () -> {
+        Assertions.assertThrows(WrongCompanyName.class, () -> {
             taskService.deleteTask("Eweqr", 5L);
         });
     }
@@ -108,15 +111,23 @@ public class TaskServiceTest {
     @Test
     @WithMockUser(username = "nike@gmail.com", password = "123456")
     void updateTaskWithWrongId() {
-        String expected = "The task with such id is not found!";
-        String actual = taskService.updateTask("Nike", 10L, new Task("Wrong id"));
-        Assertions.assertEquals(expected, actual);
+        Assertions.assertThrows(WrongTaskId.class, () -> {
+            taskService.updateTask("nike", 6L, new Task("Qwe"));
+        });
+    }
+
+    @Test
+    @WithMockUser(username = "nike@gmail.com", password = "123456")
+    void updateTaskWithNonExistingId() {
+        Assertions.assertThrows(NonExistingTaskId.class, () -> {
+            taskService.updateTask("nike", 15L, new Task("Qwe"));
+        });
     }
 
     @Test
     @WithMockUser(username = "nike@gmail.com", password = "123456")
     void updateTaskForWrongCompany() {
-        Assertions.assertThrows(IllegalStateException.class, () -> {
+        Assertions.assertThrows(WrongCompanyName.class, () -> {
             taskService.updateTask("Qwerq", 5L, new Task("Wrong company"));
         });
     }
@@ -139,31 +150,31 @@ public class TaskServiceTest {
     @Test
     @WithMockUser(username = "nike@gmail.com", password = "123456")
     void assignToEmployeeFromAnotherCompany() {
-        String expected = "This user doesn't belong to Nike company";
-        String actual = taskService.assignToOtherEmployee("Nike", 1L, 2L);
-        Assertions.assertEquals(expected, actual);
+        Assertions.assertThrows(NoPermission.class, () -> {
+            taskService.assignToOtherEmployee("amazon", 1L, 2L);
+        });
     }
 
     @Test
     @WithMockUser(username = "nike@gmail.com", password = "123456")
     void assignToEmployeeWithWrongId() {
-        String expected = "Wrong employee id";
-        String actual = taskService.assignToOtherEmployee("Nike", 1L, 10L);
-        Assertions.assertEquals(expected, actual);
+        Assertions.assertThrows(WrongEmployeeId.class, () -> {
+            taskService.assignToOtherEmployee("nike", 1L, 10L);
+        });
     }
 
     @Test
     @WithMockUser(username = "nike@gmail.com", password = "123456")
     void assignToEmployeeWrongTaskId() {
-        String expected = "Wrong task id";
-        String actual = taskService.assignToOtherEmployee("Nike", 10L, 1L);
-        Assertions.assertEquals(expected, actual);
+        Assertions.assertThrows(WrongTaskId.class, () -> {
+            taskService.assignToOtherEmployee("nike", 10L, 1L);
+        });
     }
 
     @Test
     @WithMockUser(username = "nike@gmail.com", password = "123456")
     void assignToEmployeeWithWrongCompanyName() {
-        Assertions.assertThrows(IllegalStateException.class, () -> {
+        Assertions.assertThrows(WrongCompanyName.class, () -> {
             taskService.assignToOtherEmployee("wqrwrweq", 5L, 2L);
         });
     }
@@ -186,9 +197,9 @@ public class TaskServiceTest {
     @Test
     @WithMockUser(username = "nike@gmail.com", password = "123456")
     void companyValidationForWrongCompanyName() {
-        boolean expected = false;
-        boolean actual = taskService.companyValidation("Amazon");
-        Assertions.assertEquals(expected, actual);
+        Assertions.assertThrows(WrongCompanyName.class, () -> {
+            taskService.companyValidation("Qwqr");
+        });
     }
 
     @Test
