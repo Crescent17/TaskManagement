@@ -1,12 +1,14 @@
 package com.project.taskmanagement.service;
 
 
+import com.project.taskmanagement.exception.*;
 import com.project.taskmanagement.model.Employee;
 import com.project.taskmanagement.model.Task;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,13 +25,13 @@ class EmployeeServiceTest {
     @Test
     void register() {
         String expected = "Successful registration!";
-        String actual = employeeService.register(new Employee("Pavel", "Markov", "mark21@gmail.com", "123456", "Puma"));
+        String actual = employeeService.register(new Employee("Pavel", "Markov", "mark21@gmail.com", "123456", "Apple"));
         Assertions.assertEquals(expected, actual);
     }
 
     @Test
     void registerForNonExistingCompany() {
-        Assertions.assertThrows(IllegalStateException.class, () -> {
+        Assertions.assertThrows(WrongCompanyName.class, () -> {
             employeeService.register(new Employee("Jack", "Brown", "jack363@gmail.com", "123456", "NonExisting"));
         });
     }
@@ -50,8 +52,132 @@ class EmployeeServiceTest {
 
     @Test
     void assignTaskForEmployeeWithWrongId() {
-        Assertions.assertThrows(IllegalStateException.class, () -> {
-            employeeService.assignTask(5L, new Task("Assign"));
+        Assertions.assertThrows(WrongEmployeeId.class, () -> {
+            employeeService.assignTask(100L, new Task("Assign"));
         });
     }
+
+    @Test
+    @WithMockUser(username = "alex@gmail.com", password = "123456")
+    void changeEmployeeName() {
+        String expected = "Changed!";
+        String actual = employeeService.changeEmployeeName("Alex", "Jeremy");
+        Assertions.assertEquals(expected, actual);
+    }
+
+    @Test
+    @WithMockUser(username = "alex@gmail.com", password = "123456")
+    void changeEmployeeNameWithWrongPreviousName() {
+        Assertions.assertThrows(WrongEmployeeName.class, () -> {
+            employeeService.changeEmployeeName("Mike", "Jeremy");
+        });
+    }
+
+    @Test
+    void changeEmployeeNameWithoutAuthentication() {
+        Assertions.assertThrows(NullPointerException.class, () -> {
+            employeeService.changeEmployeeName("Alex", "Jeremy");
+        });
+    }
+
+    @Test
+    @WithMockUser(username = "alex@gmail.com", password = "123456")
+    void changeEmployeeLastName() {
+        String expected = "Changed!";
+        String actual = employeeService.changeEmployeeLastName("Jackson", "Karel");
+        Assertions.assertEquals(expected, actual);
+    }
+
+    @Test
+    @WithMockUser(username = "alex@gmail.com", password = "123456")
+    void changeEmployeeLastNameWithWrongPreviousLastName() {
+        Assertions.assertThrows(WrongEmployeeLastName.class, () -> {
+            employeeService.changeEmployeeLastName("QWt", "Karel");
+        });
+    }
+
+    @Test
+    void changeEmployeeLastNameWithoutAuthentication() {
+        Assertions.assertThrows(NullPointerException.class, () -> {
+            employeeService.changeEmployeeLastName("Jackson", "Karel");
+        });
+    }
+
+    @Test
+    @WithMockUser(username = "alex@gmail.com", password = "123456")
+    void changeEmployeeUsername() {
+        String expected = "Changed!";
+        String actual = employeeService.changeEmployeeUsername("alex@gmail.com", "jeremy@gmail.com");
+        Assertions.assertEquals(expected, actual);
+    }
+
+    @Test
+    @WithMockUser(username = "alex@gmail.com", password = "123456")
+    void chooseExistingUsername() {
+        Assertions.assertThrows(EntityExistsException.class, () -> {
+            employeeService.changeEmployeeUsername("alex@gmail.com", "hendersen@gmail.com");
+        });
+    }
+
+    @Test
+    @WithMockUser(username = "alex@gmail.com", password = "123456")
+    void wrongPreviousUsername() {
+        Assertions.assertThrows(WrongUsername.class, () -> {
+            employeeService.changeEmployeeUsername("qwet", "jeremy@gmail.com");
+        });
+    }
+
+    @Test
+    void changeUsernameWithoutAuthentication() {
+        Assertions.assertThrows(NullPointerException.class, () -> {
+            employeeService.changeEmployeeUsername("alex@gmail.com", "jeremy@gmail.com");
+        });
+    }
+
+    @Test
+    @WithMockUser(username = "alex@gmail.com", password = "123456")
+    void changeEmployeePassword() {
+        String expected = "Changed!";
+        String actual = employeeService.changeEmployeePassword("123456", "1234567");
+        Assertions.assertEquals(expected, actual);
+    }
+
+    @Test
+    @WithMockUser(username = "alex@gmail.com", password = "123456")
+    void passwordsDontMatch() {
+        Assertions.assertThrows(PasswordsDontMatch.class, () -> {
+            employeeService.changeEmployeePassword("12345", "1234567");
+        });
+    }
+
+    @Test
+    void changePasswordWithoutAuthentication() {
+        Assertions.assertThrows(NullPointerException.class, () -> {
+            employeeService.changeEmployeePassword("123456", "1234567");
+        });
+    }
+
+    @Test
+    @WithMockUser(username = "alex@gmail.com", password = "123456")
+    void changeCompany() {
+        String expected = "Changed!";
+        String actual = employeeService.changeCompany("Apple");
+        Assertions.assertEquals(expected, actual);
+    }
+
+    @Test
+    @WithMockUser(username = "alex@gmail.com", password = "123456")
+    void changeCompanyWrongName() {
+        Assertions.assertThrows(WrongCompanyName.class, () -> {
+            employeeService.changeCompany("Qwqr");
+        });
+    }
+
+    @Test
+    void changeCompanyWithoutAuthentication() {
+        Assertions.assertThrows(NullPointerException.class, () -> {
+            employeeService.changeCompany("Apple");
+        });
+    }
+
 }
