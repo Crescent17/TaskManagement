@@ -1,16 +1,16 @@
 package com.project.taskmanagement.service;
 
+import com.project.taskmanagement.exception.*;
 import com.project.taskmanagement.model.Company;
 import com.project.taskmanagement.model.Employee;
 import com.project.taskmanagement.model.Task;
 import com.project.taskmanagement.repository.EmployeeRepository;
 import com.project.taskmanagement.repository.TaskRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Objects;
@@ -33,50 +33,54 @@ public class TaskService {
     }
 
     public String assignTask(String companyName, Long employeeId, Task task) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        List<Company> companyOptional = companyService.findByName(companyName);
-        if (!companyOptional.isEmpty()) {
-            if (companyService.findByUsername(authentication.getName()).get(0).getName().equalsIgnoreCase(companyName)) {
-                Company company = companyOptional.get(0);
-                Optional<Employee> employeeOptional = employeeRepository.findById(employeeId);
-                if (employeeOptional.isPresent()) {
-                    Employee employee = employeeOptional.get();
-                    if (Objects.equals(company.getCompanyId(), employee.getCompany().getCompanyId())) {
-                        task.setEmployee(employeeRepository.findById(employeeId).get());
-                        employeeService.assignTask(employeeId, task);
-                        taskRepository.save(task);
-                        return "Saved";
-                    }
-                    return "Employee with such id doesn't belong to this company!";
+        if (companyValidation(companyName)) {
+            Optional<Employee> employeeOptional = employeeRepository.findById(employeeId);
+            if (employeeOptional.isPresent()) {
+                Employee employee = employeeOptional.get();
+                Company company = companyService.findByName(companyName).get(0);
+                if (Objects.equals(company.getCompanyId(), employee.getCompany().getCompanyId())) {
+                    task.setEmployee(employeeRepository.findById(employeeId).get());
+                    employeeService.assignTask(employeeId, task);
+                    taskRepository.save(task);
+                    return "Saved";
                 }
-                return "Employee with such id doesn't exist!";
+                throw new EmployeeFromAnotherCompany();
             }
-            return "You don't have permission to assign tasks to users who are not in you company!";
+            throw new WrongEmployeeId();
         }
-        return "The company with such name doesn't exist";
+        return null;
     }
 
     public String deleteTask(String companyName, Long taskId) {
         if (companyValidation(companyName)) {
-            if (taskRepository.findById(taskId).isPresent()) {
-                taskRepository.deleteByTaskId(taskId);
-                return "Deleted!";
+            Optional<Task> taskByIdOptional = taskRepository.findById(taskId);
+            if (taskByIdOptional.isPresent()) {
+                Task task = taskByIdOptional.get();
+                if (task.getEmployee().getCompanyName().equalsIgnoreCase(companyName)) {
+                    taskRepository.deleteByTaskId(taskId);
+                    return "Deleted!";
+                }
+                throw new AccessDeniedException("Access denied!");
             }
-            return "No task with such id!";
+            throw new WrongTaskId();
         }
-        return "You cannot delete task for this company!";
+        throw new AccessDeniedException("Access denied!");
     }
 
     public String updateTask(String companyName, Long taskId, Task task) {
         if (companyValidation(companyName)) {
             Optional<Task> oldTaskOptional = taskRepository.findById(taskId);
             if (oldTaskOptional.isPresent()) {
-                taskRepository.updateByTaskId(taskId, task.getExplanation());
-                return "Changed!";
+                Task oldTask = oldTaskOptional.get();
+                if (oldTask.getEmployee().getCompanyName().equalsIgnoreCase(companyName)) {
+                    taskRepository.updateByTaskId(taskId, task.getExplanation());
+                    return "Changed!";
+                }
+                throw new WrongTaskId();
             }
-            return "The task with such id is not found!";
+            throw new NonExistingTaskId();
         }
-        return "You cannot update task for this company!";
+        throw new AccessDeniedException("Access denied!");
     }
 
     public String assignToOtherEmployee(String companyName, Long taskId, Long employeeId) {
@@ -91,13 +95,13 @@ public class TaskService {
                         task.setEmployee(employeeRepository.findById(employeeId).get());
                         return "The task was reassigned!";
                     }
-                    return "This user doesn't belong to " + companyName + " company";
+                    throw new WrongCompanyName();
                 }
-                return "Wrong employee id";
+                throw new WrongEmployeeId();
             }
-            return "Wrong task id";
+            throw new WrongTaskId();
         }
-        return "Wrong company name";
+        throw new NoPermission();
     }
 
     public boolean companyValidation(String companyName) {
@@ -108,9 +112,9 @@ public class TaskService {
             if (company.getUsername().equalsIgnoreCase(authentication.getName())) {
                 return true;
             }
-            return false;
+            throw new NoPermission();
         }
-        return false;
+        throw new WrongCompanyName();
     }
 }
 
