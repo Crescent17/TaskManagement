@@ -122,4 +122,9 @@ public class EmployeeService implements UserDetailsService {
         }
         throw new WrongCompanyName();
     }
+
+    public List<Employee> printInfo() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        return employeeRepository.findByUsername(authentication.getName());
+    }
 }

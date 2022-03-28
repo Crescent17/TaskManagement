@@ -17,7 +17,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
 
+@CrossOrigin(origins = "http://localhost:3000")
 @RestController
 @Component
 public class HomeController {
@@ -37,9 +39,19 @@ public class HomeController {
         this.jwtTokenUtil = jwtUtil;
     }
 
+    @GetMapping("/company/data")
+    public ResponseEntity<?> companyData() {
+        return new ResponseEntity<>(companyService.printCompanyData(), HttpStatus.OK);
+    }
+
     @GetMapping("/company/info")
     public ResponseEntity<?> companyInfo() {
         return new ResponseEntity<>(companyService.printInfo(), HttpStatus.OK);
+    }
+
+    @GetMapping("/employee/info")
+    public ResponseEntity<?> employeeInfo() {
+        return new ResponseEntity<>(employeeService.printInfo(), HttpStatus.OK);
     }
 
     @PostMapping("/company/register")
