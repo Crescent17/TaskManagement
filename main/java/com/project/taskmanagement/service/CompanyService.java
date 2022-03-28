@@ -5,7 +5,6 @@ import com.project.taskmanagement.model.Company;
 import com.project.taskmanagement.model.Employee;
 import com.project.taskmanagement.repository.CompanyRepository;
 import com.project.taskmanagement.repository.EmployeeRepository;
-import com.project.taskmanagement.repository.TaskRepository;
 import com.project.taskmanagement.util.MyPasswordEncoder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
@@ -27,8 +26,7 @@ public class CompanyService implements UserDetailsService {
 
     @Autowired
     public CompanyService(CompanyRepository companyRepository, EmployeeRepository employeeRepository,
-                          TaskRepository taskRepository, MyPasswordEncoder myPasswordEncoder,
-                          EmployeeService employeeService) {
+                          MyPasswordEncoder myPasswordEncoder) {
         this.companyRepository = companyRepository;
         this.employeeRepository = employeeRepository;
         this.myPasswordEncoder = myPasswordEncoder;
@@ -132,5 +130,14 @@ public class CompanyService implements UserDetailsService {
             throw new NoPermission();
         }
         throw new AuthorizationException();
+    }
+
+    public List<Company> printCompanyData() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        List<Company> companyOptional = companyRepository.findByUsername(authentication.getName());
+        if (!companyOptional.isEmpty()) {
+            return companyOptional;
+        }
+        throw new NoPermission();
     }
 }
