@@ -57,7 +57,7 @@ public class TaskService {
             if (taskByIdOptional.isPresent()) {
                 Task task = taskByIdOptional.get();
                 if (task.getEmployee().getCompanyName().equalsIgnoreCase(companyName)) {
-                    taskRepository.deleteByTaskId(taskId);
+                    taskRepository.deleteById(taskId);
                     return "Deleted!";
                 }
                 throw new AccessDeniedException("Access denied!");
