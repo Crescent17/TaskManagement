@@ -41,21 +41,25 @@ public class CompanySecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        http.csrf().disable()
+        http.cors();
+                http.csrf().disable()
                 .authorizeRequests()
                 .antMatchers("/company/register").permitAll()
                 .antMatchers("/employee/register").permitAll()
                 .antMatchers("/company/authenticate").permitAll()
                 .antMatchers("/employee/authenticate").permitAll()
+                .antMatchers("/company/info").hasRole("COMPANY")
+                .antMatchers("/employee/**").hasRole("EMPLOYEE")
                 .antMatchers("/company/**").hasRole("COMPANY")
                 .antMatchers("/*/assign/*").hasRole("COMPANY")
                 .antMatchers("/*/update/*").hasRole("COMPANY")
                 .antMatchers("/*/delete/*").hasRole("COMPANY")
                 .antMatchers("/*/reassign/*").hasRole("COMPANY")
-                .antMatchers("/employee/**").hasAnyRole("COMPANY", "EMPLOYEE")
                 .and().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
         http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
     }
+
+
 
     @Override
     @Bean
@@ -68,4 +72,5 @@ public class CompanySecurityConfiguration extends WebSecurityConfigurerAdapter {
     public PasswordEncoder passwordEncoderCompanyBean() {
         return new BCryptPasswordEncoder();
     }
+
 }
