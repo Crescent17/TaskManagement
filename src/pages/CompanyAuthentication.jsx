@@ -28,7 +28,7 @@ function CompanyAuthentication() {
         <Box>
             <Header/>
             <Container sx={{textAlign: "center", marginTop: "13%"}}>
-                <Typography fontWeight={"bold"} fontSize="30px">Employee Authentication</Typography>
+                <Typography fontWeight={"bold"} fontSize="30px">Company Authentication</Typography>
                 <Box>
                     <form>
                         <TextField required label="Login" variant={"outlined"}
