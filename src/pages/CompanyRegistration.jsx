@@ -1,6 +1,8 @@
 import {useState} from "react";
 import axios from "axios";
 import Header from "./Header";
+import {Box, Button, Container, TextField} from "@mui/material";
+import Typography from "@mui/material/Typography";
 
 function CompanyRegistration() {
     const [name, setName] = useState()
@@ -20,25 +22,37 @@ function CompanyRegistration() {
     }
 
     return (
-        <div>
+        <Box>
             <Header/>
-            <div className="registration">
-                <p className="headline">Company registration</p>
-                <form onSubmit={register}>
-                    <input className="inputField" placeholder="Name" required={true}
-                           onChange={e => setName(e.target.value)}/>
-                    <br/>
-                    <input className="inputField" placeholder="Username" required={true}
-                           onChange={e => setEmail(e.target.value)}/>
-                    <br/>
-                    <input className="inputField" type="password" placeholder="Password" required={true}
-                           onChange={e => setPassword(e.target.value)}/>
-                    <br/>
-                    <button className="registerButton">Register</button>
-                    <p className="error">{error}</p>
-                </form>
-            </div>
-        </div>
+            <Container sx={{textAlign: "center", marginTop: "7%"}}>
+                <Typography fontWeight={"bold"} fontSize="30px">Company Registration</Typography>
+                <Box>
+                    <form>
+                        <TextField required label="Name" variant={"outlined"}
+                                   sx={{mt: "5%", background: "ghostwhite", width: "30%"}}
+                                   onChange={e => setName(e.target.value)}/>
+                        <br/>
+                        <TextField required label="Email" variant={"outlined"}
+                                   sx={{mt: "5%", background: "ghostwhite", width: "30%"}}
+                                   onChange={e => setEmail(e.target.value)}/>
+                        <br/>
+                        <TextField required label="Password" variant={"outlined"} type={"password"}
+                                   sx={{mt: "5%", background: "ghostwhite", width: "30%"}}
+                                   onChange={e => setPassword(e.target.value)}/>
+                        <br/>
+                        <Button type={"submit"} sx={{
+                            mt: "5%",
+                            width: "30%",
+                            border: "ghostwhite solid",
+                            color: "white",
+                            background: "black",
+                            display: "inline-block",
+                        }} onClick={register}>Register</Button>
+                    </form>
+                </Box>
+                <Typography mt="1%" fontWeight={"bold"} color={"crimson"} fontSize="30px">{error}</Typography>
+            </Container>
+        </Box>
     )
 }
 
