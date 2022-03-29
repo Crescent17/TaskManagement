@@ -2,6 +2,8 @@ import {useState} from "react";
 import {useNavigate} from "react-router-dom";
 import axios from "axios";
 import Header from "./Header";
+import {Box, Button, Container, TextField} from "@mui/material";
+import Typography from "@mui/material/Typography";
 
 function EmployeeAuthentication() {
     const [login, setLogin] = useState()
@@ -23,22 +25,32 @@ function EmployeeAuthentication() {
     }
 
     return (
-        <div className="loginPage">
+        <Box>
             <Header/>
-            <div className="login">
-                Authorization
-                <form onSubmit={authenticate}>
-                    <input type="text" className="inputField" placeholder="Username"
-                           onChange={e => setLogin(e.target.value)}
-                           required={true}/>
-                    <input type="password" className="inputField" placeholder="Password"
-                           onChange={e => setPassword(e.target.value)} required={true}/>
-                    <br/>
-                    <button className="loginButton">Log in</button>
-                </form>
-                <p>{message}</p>
-            </div>
-        </div>
+            <Container sx={{textAlign: "center", marginTop: "13%"}}>
+                <Typography fontWeight={"bold"} fontSize="30px">Employee Authentication</Typography>
+                <Box>
+                    <form>
+                        <TextField required label="Login" variant={"outlined"}
+                                   sx={{mt: "5%", background: "ghostwhite", width: "30%"}}
+                                   onChange={e => setLogin(e.target.value)}/>
+                        <TextField required label="Password" variant={"outlined"} type={"password"}
+                                   sx={{ml: "2%", mt: "5%", background: "ghostwhite", width: "30%"}}
+                                   onChange={e => setPassword(e.target.value)}/>
+                        <br/>
+                        <Button type={"submit"} sx={{
+                            mt: "5%",
+                            width: "30%",
+                            border: "ghostwhite solid",
+                            color: "white",
+                            background: "black",
+                            display: "inline-block",
+                        }} onClick={authenticate}>Login</Button>
+                    </form>
+                </Box>
+                <Typography mt="1%" fontWeight={"bold"} color={"crimson"} fontSize="30px">{message}</Typography>
+            </Container>
+        </Box>
     )
 
 }
