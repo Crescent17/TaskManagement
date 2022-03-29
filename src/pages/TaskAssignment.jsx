@@ -2,6 +2,8 @@ import React, {useState} from "react";
 import {useSearchParams} from "react-router-dom";
 import TaskService from "../service/TaskService";
 import Header from "./Header";
+import {Box, Button, Container, TextField} from "@mui/material";
+import Typography from "@mui/material/Typography";
 
 function TaskAssignment() {
     const [searchParams, setSearchParams] = useSearchParams()
@@ -12,29 +14,32 @@ function TaskAssignment() {
 
 
     return (
-        <div>
+        <Box>
             <Header/>
-            <div className="taskAssignment">
-                Assign Task
-                <div>
+            <Container sx={{textAlign: "center", marginTop: "10%"}}>
+                <Typography fontWeight={"bold"} fontSize="40px">Assign task</Typography>
+                <Container>
                     <form onSubmit={(event) => {
                         event.preventDefault()
                         TaskService.addTask(company, id, explanation)
                             .then(response => setMessage(response.data))
                             .catch(error => setMessage(error.response.data))
                     }}>
-                        <p><textarea className="comment" onChange={e => setExplanation(e.target.value)}
-                                     required={true}/>
-                        </p>
-                        <p>
-                            <button className="assignTaskButton">Assign
-                            </button>
-                        </p>
+                        <TextField inputProps={{maxLength: 70}} multiline maxRows={3}
+                                   sx={{width: "500px", background: "white"}}
+                                   onChange={e => setExplanation(e.target.value)}
+                                   required={true}/>
+                        <Typography>
+                            <Button type={"submit"} color="success" variant={"contained"} sx={{mt: "5%"}}>Assign
+                            </Button>
+                        </Typography>
                     </form>
-                </div>
-                <div className="message-wrapper"><p className="message">{message}</p></div>
-            </div>
-        </div>
+                </Container>
+                <Container className="message-wrapper"><Typography fontWeight={"bold"} fontSize="40px"
+                                                                   color={"crimson"}>
+                    {message}</Typography></Container>
+            </Container>
+        </Box>
     )
 }
 
