@@ -5,6 +5,8 @@ import {useNavigate} from "react-router-dom";
 import PopUp from "../service/PopUp";
 import CompanyService from "../service/CompanyService";
 import Header from "./Header";
+import {Box, Button, Container, TableBody, TableCell, TableHead, TableRow} from "@mui/material";
+import Typography from "@mui/material/Typography";
 
 function CompanyInfo() {
     const [employees, setEmployees] = useState([])
@@ -28,81 +30,68 @@ function CompanyInfo() {
 
 
     return (
-        <div className="info">
+        <Box>
             <Header/>
-            <p className="companyName">{companyName}</p>
+            <Typography fontWeight={"bold"} fontSize="40px" textAlign={"center"}>{companyName}</Typography>
             <table className="custom-table">
-                <thead className="names">
-                <tr>
-                    <th>Id</th>
-                    <th className="w-25">Name</th>
-                    <th className="w-25">Surname</th>
-                    <th className="w-25">Company</th>
-                    <th className="w-100">Tasks</th>
-                </tr>
-                </thead>
-                <tbody>
-                {employees.map(
-                    employee =>
-                        <tr key={employee.employeeId}>
-                            <td>{employee.employeeId}</td>
-                            <td>{employee.name}
-                                <button className="deleteButton"
-                                        onClick={(event) => {
-                                            event.preventDefault()
-                                            CompanyService.deleteEmployee(employee.companyName, employee.username)
-                                                .then(response => setMessage(response.data))
-                                                .catch(error => setMessage(error.response.data))
-                                        }}>Delete
-                                </button>
-                            </td>
-                            <td>{employee.lastName}</td>
-                            <td>{employee.companyName}</td>
-                            <td>{employee.task.map(task =>
-                                <div>{task.explanation}
-                                    <button className="deleteButton"
+                <TableHead>
+                    <TableRow>
+                        <TableCell sx={{textAlign: "center", fontSize: "20px"}}>Id</TableCell>
+                        <TableCell sx={{textAlign: "center", fontSize: "20px"}}>Name</TableCell>
+                        <TableCell sx={{textAlign: "center", fontSize: "20px"}}>Surname</TableCell>
+                        <TableCell sx={{textAlign: "center", fontSize: "20px"}}>Company</TableCell>
+                        <TableCell sx={{textAlign: "center", fontSize: "20px"}}>Tasks</TableCell>
+                    </TableRow>
+                </TableHead>
+                <TableBody>
+                    {employees.map(
+                        employee =>
+                            <TableRow key={employee.employeeId}>
+                                <TableCell
+                                    sx={{textAlign: "center", fontSize: "20px"}}>{employee.employeeId}</TableCell>
+                                <TableCell sx={{textAlign: "center", fontSize: "20px"}}>{employee.name}
+                                    <Button color={"error"} variant={"contained"} sx={{float: "right"}}
                                             onClick={(event) => {
                                                 event.preventDefault()
-                                                TaskService.deleteTask(companyName, task.taskId)
+                                                CompanyService.deleteEmployee(employee.companyName, employee.username)
                                                     .then(response => setMessage(response.data))
                                                     .catch(error => setMessage(error.response.data))
                                             }}>Delete
-                                    </button>
-                                    <button className="editButton" onClick={() => PopUp.openForm(task.taskId)}>Edit
-                                    </button>
-                                    <div className="form-popup" id={task.taskId}>
-                                        <form className="form-container">
-                                            <h1>Edit</h1>
-                                            <textarea name="task" required defaultValue={task.explanation}
-                                                      className="edit" onChange={e => setExplanation(e.target.value)}/>
-
-                                            <button type="submit" className="btn"
-                                                    onClick={(event) => {
+                                    </Button>
+                                </TableCell>
+                                <TableCell sx={{textAlign: "center", fontSize: "20px"}}>{employee.lastName}</TableCell>
+                                <TableCell
+                                    sx={{textAlign: "center", fontSize: "20px"}}>{employee.companyName}</TableCell>
+                                <TableCell sx={{fontSize: "20px"}}>{employee.task.map(task =>
+                                    <Container>
+                                        <Typography mb="25px">{task.explanation}
+                                            <Button color={"error"}
+                                                    variant={"contained"}
+                                                    sx={{float: "right"}} onClick={(event) => {
                                                         event.preventDefault()
-                                                        TaskService.updateTask(employee.companyName, task.taskId, explanation)
-                                                            .then(response => setMessage(response.data))
-                                                            .catch(error => setMessage(error.response.data))
-                                                    }}>Save
-                                            </button>
-                                            <button type="button" className="btn cancel"
-                                                    onClick={() => PopUp.closeForm(task.taskId)}>Close
-                                            </button>
-                                        </form>
-                                    </div>
-                                </div>
-                            )}
-                                <button className="assign"
-                                        onClick={() => {
-                                            navigate(`/company/assign/?id=${employee.employeeId}&company=${employee.companyName}`)
-                                        }}>Assign
-                                </button>
-                            </td>
-                        </tr>
-                )}
-                </tbody>
+                                                TaskService.deleteTask(companyName, task.taskId)
+                                                    .then(response => setMessage(response.data))
+                                                    .catch(error => setMessage(error.response.data))
+                                            }}>Delete</Button>
+                                            <Button color={"success"}
+                                                    variant={"contained"}
+                                                    sx={{float: "right"}}>Edit</Button>
+                                        </Typography>
+                                    </Container>)}
+                                    <Container sx={{textAlign: "center"}}>
+                                        <Button color={"success"} variant={"contained"}
+                                                sx={{alignContent: "center"}}
+                                                onClick={() =>
+                                                    navigate(`../company/assign/?id=${employee.employeeId}&company=${employee.companyName}`)}>
+                                            Assign</Button>
+                                    </Container>
+                                </TableCell>
+                            </TableRow>
+                    )}
+                </TableBody>
             </table>
             <div className="message-wrapper"><p className="message">{message}</p></div>
-        </div>
+        </Box>
     )
 }
 
