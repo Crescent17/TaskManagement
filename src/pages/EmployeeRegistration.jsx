@@ -32,23 +32,23 @@ function EmployeeRegistration() {
                 <Box>
                     <form>
                         <TextField required label="Name" variant={"outlined"}
-                                   sx={{mt: "5%", background: "ghostwhite", width: "30%"}}
+                                   sx={{mt: "3%", background: "ghostwhite", width: "30%"}}
                                    onChange={e => setName(e.target.value)}/>
                         <br/>
                         <TextField required label="Surname" variant={"outlined"}
-                                   sx={{mt: "5%", background: "ghostwhite", width: "30%"}}
+                                   sx={{mt: "3%", background: "ghostwhite", width: "30%"}}
                                    onChange={e => setSurname(e.target.value)}/>
                         <br/>
                         <TextField required label="Email" variant={"outlined"}
-                                   sx={{mt: "5%", background: "ghostwhite", width: "30%"}}
+                                   sx={{mt: "3%", background: "ghostwhite", width: "30%"}}
                                    onChange={e => setEmail(e.target.value)}/>
                         <br/>
                         <TextField required label="Password" variant={"outlined"} type={"password"}
-                                   sx={{mt: "5%", background: "ghostwhite", width: "30%"}}
+                                   sx={{mt: "3%", background: "ghostwhite", width: "30%"}}
                                    onChange={e => setPassword(e.target.value)}/>
                         <br/>
                         <TextField required label="Company" variant={"outlined"}
-                                   sx={{mt: "5%", background: "ghostwhite", width: "30%"}}
+                                   sx={{mt: "3%", background: "ghostwhite", width: "30%"}}
                                    onChange={e => setCompany(e.target.value)}/>
                         <br/>
                         <Button type={"submit"} sx={{
