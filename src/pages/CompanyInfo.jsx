@@ -5,7 +5,7 @@ import {useNavigate} from "react-router-dom";
 import PopUp from "../service/PopUp";
 import CompanyService from "../service/CompanyService";
 import Header from "./Header";
-import {Box, Button, Container, TableBody, TableCell, TableHead, TableRow} from "@mui/material";
+import {Box, Button, Container, Table, TableBody, TableCell, TableHead, TableRow} from "@mui/material";
 import Typography from "@mui/material/Typography";
 
 function CompanyInfo() {
@@ -33,7 +33,7 @@ function CompanyInfo() {
         <Box>
             <Header/>
             <Typography fontWeight={"bold"} fontSize="40px" textAlign={"center"}>{companyName}</Typography>
-            <table className="custom-table">
+            <Table>
                 <TableHead>
                     <TableRow>
                         <TableCell sx={{textAlign: "center", fontSize: "20px"}}>Id</TableCell>
@@ -89,8 +89,8 @@ function CompanyInfo() {
                             </TableRow>
                     )}
                 </TableBody>
-            </table>
-            <div className="message-wrapper"><p className="message">{message}</p></div>
+            </Table>
+            <Container><Typography mt="40px" textAlign={"center"} color={"crimson"} fontWeight={"bold"} fontSize="40px">{message}</Typography></Container>
         </Box>
     )
 }
