@@ -1,9 +1,8 @@
 import {useState} from "react";
 import axios from "axios";
 import Header from "./Header";
-import {Box, Button, Container, FormControl, TextField} from "@mui/material";
+import {Box, Button, Container, TextField} from "@mui/material";
 import Typography from "@mui/material/Typography";
-import Footer from "./Footer";
 
 function EmployeeRegistration() {
 
