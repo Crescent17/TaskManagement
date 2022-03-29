@@ -1,12 +1,12 @@
 import 'bootstrap/dist/css/bootstrap.css'
+import {BottomNavigation} from "@mui/material";
+import Typography from "@mui/material/Typography";
 
 function Footer() {
     return (
-        <div className="align-content-center">
-            <footer className="footer">
-                <span className="h4 text-black">Footer</span>
-            </footer>
-        </div>
+        <BottomNavigation sx={{position: "fixed", background: "black", bottom: 0, width: "100%"}}>
+            <Typography color={"white"} fontWeight={"bold"} marginTop="15px">Footer</Typography>
+        </BottomNavigation>
     )
 }
 
