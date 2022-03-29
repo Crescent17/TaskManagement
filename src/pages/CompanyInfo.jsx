@@ -68,7 +68,7 @@ function CompanyInfo() {
                                             <Button color={"error"}
                                                     variant={"contained"}
                                                     sx={{float: "right"}} onClick={(event) => {
-                                                        event.preventDefault()
+                                                event.preventDefault()
                                                 TaskService.deleteTask(companyName, task.taskId)
                                                     .then(response => setMessage(response.data))
                                                     .catch(error => setMessage(error.response.data))
@@ -90,7 +90,8 @@ function CompanyInfo() {
                     )}
                 </TableBody>
             </Table>
-            <Container><Typography mt="40px" textAlign={"center"} color={"crimson"} fontWeight={"bold"} fontSize="40px">{message}</Typography></Container>
+            <Container><Typography mt="40px" textAlign={"center"} color={"crimson"} fontWeight={"bold"}
+                                   fontSize="40px">{message}</Typography></Container>
         </Box>
     )
 }
