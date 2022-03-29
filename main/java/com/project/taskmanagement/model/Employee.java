@@ -26,12 +26,12 @@ public class Employee implements UserDetails {
     private String username;
     @Column(nullable = false)
     private String password;
-    @ManyToOne(cascade = CascadeType.MERGE, fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "company_id", referencedColumnName = "companyId")
     private Company company;
     @Column(nullable = false)
     private String companyName;
-    @OneToMany(mappedBy = "employee", fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "employee", fetch = FetchType.EAGER, cascade = CascadeType.REMOVE)
     private List<Task> task = new ArrayList<>();
 
     public Employee(String name, String lastName, String username, String password, String companyName) {
@@ -72,7 +72,7 @@ public class Employee implements UserDetails {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Employee employee = (Employee) o;
-        return Objects.equals(name, employee.name) && Objects.equals(lastName, employee.lastName) && Objects.equals(username, employee.username) && Objects.equals(password, employee.password) && Objects.equals(company, employee.company) && Objects.equals(companyName, employee.companyName) && Objects.equals(task, employee.task);
+        return Objects.equals(name, employee.name) && Objects.equals(lastName, employee.lastName) && Objects.equals(username, employee.username) && Objects.equals(password, employee.password) && Objects.equals(companyName, employee.companyName);
     }
 
     @Override

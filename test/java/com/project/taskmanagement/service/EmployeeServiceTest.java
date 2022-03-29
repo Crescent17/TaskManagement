@@ -13,6 +13,8 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityExistsException;
+import java.util.Collections;
+import java.util.List;
 
 @SpringBootTest
 @ContextConfiguration
@@ -177,6 +179,21 @@ class EmployeeServiceTest {
     void changeCompanyWithoutAuthentication() {
         Assertions.assertThrows(NullPointerException.class, () -> {
             employeeService.changeCompany("Apple");
+        });
+    }
+
+    @Test
+    @WithMockUser(username = "alex@gmail.com", password = "123456")
+    void printInfo() {
+        List<Employee> expected = Collections.singletonList(new Employee("Alex", "Jackson", "alex@gmail.com", "$2a$12$PNkqw7cxNAzILGl3qTFFpOEmLPXJkJ9eeg0dS5O1Nu9qDpLHdoG3.", "Nike"));
+        List<Employee> actual = employeeService.printInfo();
+        Assertions.assertIterableEquals(expected, actual);
+    }
+
+    @Test
+    void printInfoWithoutAuthentication() {
+        Assertions.assertThrows(NullPointerException.class, () -> {
+            employeeService.printInfo();
         });
     }
 

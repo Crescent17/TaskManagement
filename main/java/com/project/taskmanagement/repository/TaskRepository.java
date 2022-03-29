@@ -9,7 +9,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Repository
 public interface TaskRepository extends JpaRepository<Task, Long> {
-    void deleteByTaskId(Long id);
     @Modifying
     @Transactional
     @Query("update Task t set t.explanation = ?2 where t.taskId = ?1")

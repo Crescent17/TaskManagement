@@ -527,4 +527,31 @@ public class HomeControllerTest {
         RequestBuilder requestBuilder = MockMvcRequestBuilders.put("/employee/changeCompany/apple");
         mvc.perform(requestBuilder).andExpect(status().isForbidden()).andReturn();
     }
+
+    @Test
+    void printEmployeeInfo() throws Exception {
+        String jwt = jwtUtil.generateToken(employeeRepository.findByUsername("alex@gmail.com").get(0));
+        RequestBuilder requestBuilder = MockMvcRequestBuilders.get("/employee/info")
+                .header("Authorization", "Bearer " + jwt);
+        mvc.perform(requestBuilder).andExpect(status().isOk()).andReturn();
+    }
+    @Test
+    void printEmployeeInfoWithoutAuthentication() throws Exception {
+        RequestBuilder requestBuilder = MockMvcRequestBuilders.get("/employee/info");
+        mvc.perform(requestBuilder).andExpect(status().isForbidden()).andReturn();
+    }
+
+    @Test
+    void printCompanyInfo() throws Exception {
+        String jwt = jwtUtil.generateToken(companyRepository.findByUsername("nike@gmail.com").get(0));
+        RequestBuilder requestBuilder = MockMvcRequestBuilders.get("/company/info")
+                .header("Authorization", "Bearer " + jwt);
+        mvc.perform(requestBuilder).andExpect(status().isOk()).andReturn();
+    }
+
+    @Test
+    void printCompanyInfoWithoutAuthentication() throws Exception {
+        RequestBuilder requestBuilder = MockMvcRequestBuilders.get("/company/info");
+        mvc.perform(requestBuilder).andExpect(status().isForbidden()).andReturn();
+    }
 }
