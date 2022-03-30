@@ -11,7 +11,8 @@ function StartingComponent() {
         <Box>
             <Header/>
             {(AuthenticationService.isCompanyLoggedIn() || AuthenticationService.isEmployeeLoggedIn()) && <Container>
-                <Typography textAlign={"center"} fontWeight={"bold"} fontSize="40px" marginTop="28%">Thank you for using our application!</Typography>
+                <Typography textAlign={"center"} fontWeight={"bold"} fontSize="40px" marginTop="28%">Thank you for using
+                    our application!</Typography>
             </Container>}
             {(!AuthenticationService.isCompanyLoggedIn() && !AuthenticationService.isEmployeeLoggedIn()) && <Container>
                 <Container sx={{marginTop: "29%", textAlign: "center"}}>
