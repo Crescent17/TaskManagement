@@ -6,7 +6,7 @@ import {Box, Button, Container, TextField} from "@mui/material";
 import Typography from "@mui/material/Typography";
 
 function TaskAssignment() {
-    const [searchParams, setSearchParams] = useSearchParams()
+    const [searchParams] = useSearchParams()
     const [explanation, setExplanation] = useState()
     const [message, setMessage] = useState()
     let company = searchParams.get("company")
