@@ -5,8 +5,18 @@ import PopUp from "../service/PopUp";
 import axios from "axios";
 import CompanyService from "../service/CompanyService";
 import Header from "./Header";
-import {Box, Button, Container, Table, TableBody, TableCell, TableHead, TableRow} from "@mui/material";
+import {
+    Box,
+    Button,
+    Container, Input,
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableRow
+} from "@mui/material";
 import Typography from "@mui/material/Typography";
+import * as React from "react";
 
 function CompanyCabinet() {
     const [company, setCompany] = useState([])
@@ -43,10 +53,11 @@ function CompanyCabinet() {
                                 </Button>
                                 <div className="form-popup" id={company.name}>
                                     <form className="form-container">
-                                        <h1>Edit</h1>
+                                        <Typography fontWeight={"bold"} fontSize="40px"
+                                                    textAlign={"center"}>Edit</Typography>
                                         <textarea name="name" required defaultValue={company.name}
                                                   className="edit" onChange={e => setCompanyName(e.target.value)}/>
-                                        <button type="submit" className="btn"
+                                        <Button color={"success"} variant={"contained"} sx={{ml: "4%", width: "30%"}}
                                                 onClick={(event) => {
                                                     event.preventDefault()
                                                     CompanyService
@@ -54,10 +65,10 @@ function CompanyCabinet() {
                                                         .then(response => setMessage(response.data))
                                                         .catch(error => setMessage(error.response.data))
                                                 }}>Save
-                                        </button>
-                                        <button type="button" className="btn cancel"
+                                        </Button>
+                                        <Button color={"error"} variant={"contained"} sx={{ml: "10%", width: "30%"}}
                                                 onClick={() => PopUp.closeForm(company.name)}>Close
-                                        </button>
+                                        </Button>
                                     </form>
                                 </div>
                             </TableCell>
@@ -67,11 +78,13 @@ function CompanyCabinet() {
                                 </Button>
                                 <div className="form-popup" id={company.username}>
                                     <form className="form-container">
-                                        <h1>Edit</h1>
-                                        <h6>You will have to re-login!</h6>
+                                        <Typography fontWeight={"bold"} fontSize="40px"
+                                                    textAlign={"center"}>Edit</Typography>
+                                        <Typography variant={"h6"} fontWeight={"bold"} textAlign={"center"}>You will
+                                            have to re-login!</Typography>
                                         <textarea name="name" required defaultValue={company.username}
                                                   className="edit" onChange={e => setCompanyUsername(e.target.value)}/>
-                                        <button type="submit" className="btn"
+                                        <Button color={"success"} variant={"contained"} sx={{ml: "4%", width: "30%"}}
                                                 onClick={(event) => {
                                                     event.preventDefault()
                                                     CompanyService
@@ -79,10 +92,10 @@ function CompanyCabinet() {
                                                         .then(response => setMessage(response.data + ' Please re-login'))
                                                         .catch(error => setMessage(error.response.data))
                                                 }}>Save
-                                        </button>
-                                        <button type="button" className="btn cancel"
+                                        </Button>
+                                        <Button color={"error"} variant={"contained"} sx={{ml: "10%", width: "30%"}}
                                                 onClick={() => PopUp.closeForm(company.username)}>Close
-                                        </button>
+                                        </Button>
                                     </form>
                                 </div>
                             </TableCell>
@@ -92,15 +105,18 @@ function CompanyCabinet() {
                                 </Button>
                                 <div className="form-popup" id={company.password}>
                                     <form className="form-container">
-                                        <h1>Edit</h1>
-                                        <input type="password" required className="password-field"
+                                        <Typography fontWeight={"bold"} fontSize="40px"
+                                                    textAlign={"center"}>Edit</Typography>
+                                        <Input type="password" required className="password-field"
+                                               sx={{background: "whitesmoke"}}
                                                placeholder="Enter old password"
                                                onChange={e => setOldPassword(e.target.value)}/>
-                                        <input type="password" required className="password-field"
+                                        <Input type="password" required className="password-field"
+                                               sx={{background: "whitesmoke"}}
                                                placeholder="Enter new password"
                                                onChange={e => setNewPassword(e.target.value)}/>
                                         <br/>
-                                        <button type="submit" className="btn"
+                                        <Button color={"success"} variant={"contained"} sx={{ml: "4%", width: "30%"}}
                                                 onClick={(event) => {
                                                     event.preventDefault()
                                                     CompanyService
@@ -108,10 +124,10 @@ function CompanyCabinet() {
                                                         .then(response => setMessage(response.data))
                                                         .catch(error => setMessage(error.response.data))
                                                 }}>Save
-                                        </button>
-                                        <button type="button" className="btn cancel"
+                                        </Button>
+                                        <Button color={"error"} variant={"contained"} sx={{ml: "10%", width: "30%"}}
                                                 onClick={() => PopUp.closeForm(company.password)}>Close
-                                        </button>
+                                        </Button>
                                     </form>
                                 </div>
                             </TableCell>
@@ -122,7 +138,8 @@ function CompanyCabinet() {
         <Container sx={{textAlign: "center", mt: "2%"}}><Button color={"warning"} variant={"contained"}
                                                                 sx={{textAlign: "center"}}
                                                                 onClick={() => navigation("/company/info")}>Show
-            employees</Button></Container>
+            employees</Button>
+        </Container>
         <Container><Typography mt="40px" textAlign={"center"} color={"crimson"} fontWeight={"bold"}
                                fontSize="40px">{message}</Typography></Container>
         <Footer/>
