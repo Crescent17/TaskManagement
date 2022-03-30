@@ -75,8 +75,32 @@ function CompanyInfo() {
                                             }}>Delete</Button>
                                             <Button color={"success"}
                                                     variant={"contained"}
-                                                    sx={{float: "right"}}>Edit</Button>
+                                                    sx={{float: "right"}}
+                                                    onClick={() => PopUp.openForm(task.taskId)}>Edit</Button>
                                         </Typography>
+                                        <div className="form-popup" id={task.taskId}>
+                                            <form className="form-container">
+                                                <Typography fontWeight={"bold"} fontSize="40px"
+                                                            textAlign={"center"}>Edit</Typography>
+                                                <textarea name="task" required defaultValue={task.explanation}
+                                                          className="edit"
+                                                          onChange={e => setExplanation(e.target.value)}/>
+
+                                                <Button type="submit" color={"success"} variant={"contained"}
+                                                        sx={{ml: "15%", width: "30%"}}
+                                                        onClick={(event) => {
+                                                            event.preventDefault()
+                                                            TaskService.updateTask(employee.companyName, task.taskId, explanation)
+                                                                .then(response => setMessage(response.data))
+                                                                .catch(error => setMessage(error.response.data))
+                                                        }}>Save
+                                                </Button>
+                                                <Button type="button" color={"error"} variant={"contained"}
+                                                        sx={{ml: "10%", width: "30%"}}
+                                                        onClick={() => PopUp.closeForm(task.taskId)}>Close
+                                                </Button>
+                                            </form>
+                                        </div>
                                     </Container>)}
                                     <Container sx={{textAlign: "center"}}>
                                         <Button color={"success"} variant={"contained"}
@@ -95,6 +119,5 @@ function CompanyInfo() {
         </Box>
     )
 }
-
 
 export default CompanyInfo
