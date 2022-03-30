@@ -3,8 +3,9 @@ import axios from "axios";
 import PopUp from "../service/PopUp";
 import EmployeeService from "../service/EmployeeService";
 import Header from "./Header";
-import {Box, Button, Container, Table, TableBody, TableCell, TableHead, TableRow} from "@mui/material";
+import {Box, Button, Container, Input, Table, TableBody, TableCell, TableHead, TableRow} from "@mui/material";
 import Typography from "@mui/material/Typography";
+import * as React from "react";
 
 function EmployeeCabinet() {
     const [employee, setEmployee] = useState([])
@@ -41,17 +42,20 @@ function EmployeeCabinet() {
                     {employee.map(
                         employee =>
                             <TableRow key={employee.employeeId}>
-                                <TableCell sx={{textAlign: "center", fontSize: "20px"}}>{employee.employeeId}</TableCell>
+                                <TableCell
+                                    sx={{textAlign: "center", fontSize: "20px"}}>{employee.employeeId}</TableCell>
                                 <TableCell sx={{textAlign: "center", fontSize: "20px"}}>{employee.name}<br/>
                                     <Button color={"success"} variant={"contained"}
                                             onClick={() => PopUp.openForm(employee.name)}>Change
                                     </Button>
                                     <div className="form-popup" id={employee.name}>
                                         <form className="form-container">
-                                            <h1>Edit</h1>
+                                            <Typography fontWeight={"bold"} fontSize="40px"
+                                                        textAlign={"center"}>Edit</Typography>
                                             <textarea name="name" required defaultValue={employee.name}
                                                       className="edit" onChange={e => setEmployeeName(e.target.value)}/>
-                                            <button type="submit" className="btn"
+                                            <Button color={"success"} variant={"contained"}
+                                                    sx={{ml: "4%", width: "30%"}}
                                                     onClick={(event) => {
                                                         event.preventDefault()
                                                         EmployeeService
@@ -59,10 +63,10 @@ function EmployeeCabinet() {
                                                             .then(response => setMessage(response.data))
                                                             .catch(error => setMessage(error.response.data))
                                                     }}>Save
-                                            </button>
-                                            <button type="button" className="btn cancel"
+                                            </Button>
+                                            <Button color={"error"} variant={"contained"} sx={{ml: "10%", width: "30%"}}
                                                     onClick={() => PopUp.closeForm(employee.name)}>Close
-                                            </button>
+                                            </Button>
                                         </form>
                                     </div>
                                 </TableCell>
@@ -72,10 +76,12 @@ function EmployeeCabinet() {
                                     </Button>
                                     <div className="form-popup" id={employee.lastName}>
                                         <form className="form-container">
-                                            <h1>Edit</h1>
+                                            <Typography fontWeight={"bold"} fontSize="40px"
+                                                        textAlign={"center"}>Edit</Typography>
                                             <textarea name="surname" required defaultValue={employee.lastName}
                                                       className="edit" onChange={e => setLastName(e.target.value)}/>
-                                            <button type="submit" className="btn"
+                                            <Button color={"success"} variant={"contained"}
+                                                    sx={{ml: "4%", width: "30%"}}
                                                     onClick={(event) => {
                                                         event.preventDefault()
                                                         EmployeeService
@@ -83,10 +89,10 @@ function EmployeeCabinet() {
                                                             .then(response => setMessage(response.data))
                                                             .catch(error => setMessage(error.response.data))
                                                     }}>Save
-                                            </button>
-                                            <button type="button" className="btn cancel"
+                                            </Button>
+                                            <Button color={"error"} variant={"contained"} sx={{ml: "10%", width: "30%"}}
                                                     onClick={() => PopUp.closeForm(employee.lastName)}>Close
-                                            </button>
+                                            </Button>
                                         </form>
                                     </div>
                                 </TableCell>
@@ -96,11 +102,13 @@ function EmployeeCabinet() {
                                     </Button>
                                     <div className="form-popup" id={employee.username}>
                                         <form className="form-container">
-                                            <h1>Edit</h1>
+                                            <Typography fontWeight={"bold"} fontSize="40px"
+                                                        textAlign={"center"}>Edit</Typography>
                                             <h6>You will have to re-login!</h6>
                                             <textarea name="username" required defaultValue={employee.username}
                                                       className="edit" onChange={e => setUsername(e.target.value)}/>
-                                            <button type="submit" className="btn"
+                                            <Button color={"success"} variant={"contained"}
+                                                    sx={{ml: "4%", width: "30%"}}
                                                     onClick={(event) => {
                                                         event.preventDefault()
                                                         EmployeeService
@@ -108,10 +116,10 @@ function EmployeeCabinet() {
                                                             .then(response => setMessage(response.data + ' Please re-login'))
                                                             .catch(error => setMessage(error.response.data))
                                                     }}>Save
-                                            </button>
-                                            <button type="button" className="btn cancel"
+                                            </Button>
+                                            <Button color={"error"} variant={"contained"} sx={{ml: "10%", width: "30%"}}
                                                     onClick={() => PopUp.closeForm(employee.username)}>Close
-                                            </button>
+                                            </Button>
                                         </form>
                                     </div>
                                 </TableCell>
@@ -121,15 +129,19 @@ function EmployeeCabinet() {
                                     </Button>
                                     <div className="form-popup" id={employee.password}>
                                         <form className="form-container">
-                                            <h1>Edit</h1>
-                                            <input type="password" required className="password-field"
+                                            <Typography fontWeight={"bold"} fontSize="40px"
+                                                        textAlign={"center"}>Edit</Typography>
+                                            <Input type="password" required className="password-field"
+                                                   sx={{background: "whitesmoke"}}
                                                    placeholder="Enter old password"
                                                    onChange={e => setOldPassword(e.target.value)}/>
-                                            <input type="password" required className="password-field"
+                                            <Input type="password" required className="password-field"
+                                                   sx={{background: "whitesmoke"}}
                                                    placeholder="Enter new password"
                                                    onChange={e => setNewPassword(e.target.value)}/>
                                             <br/>
-                                            <button type="submit" className="btn"
+                                            <Button color={"success"} variant={"contained"}
+                                                    sx={{ml: "4%", width: "30%"}}
                                                     onClick={(event) => {
                                                         event.preventDefault()
                                                         EmployeeService
@@ -137,10 +149,10 @@ function EmployeeCabinet() {
                                                             .then(response => setMessage(response.data))
                                                             .catch(error => setMessage(error.response.data))
                                                     }}>Save
-                                            </button>
-                                            <button type="button" className="btn cancel"
+                                            </Button>
+                                            <Button color={"error"} variant={"contained"} sx={{ml: "10%", width: "30%"}}
                                                     onClick={() => PopUp.closeForm(employee.password)}>Close
-                                            </button>
+                                            </Button>
                                         </form>
                                     </div>
                                 </TableCell>
@@ -154,7 +166,8 @@ function EmployeeCabinet() {
                                             <textarea name="company" required defaultValue={employee.companyName}
                                                       className="edit"
                                                       onChange={e => setEmployeeCompany(e.target.value)}/>
-                                            <button type="submit" className="btn"
+                                            <Button color={"success"} variant={"contained"}
+                                                    sx={{ml: "4%", width: "30%"}}
                                                     onClick={(event) => {
                                                         event.preventDefault()
                                                         EmployeeService
@@ -162,14 +175,15 @@ function EmployeeCabinet() {
                                                             .then(response => setMessage(response.data))
                                                             .catch(error => setMessage(error.response.data))
                                                     }}>Save
-                                            </button>
-                                            <button type="button" className="btn cancel"
+                                            </Button>
+                                            <Button color={"error"} variant={"contained"} sx={{ml: "10%", width: "30%"}}
                                                     onClick={() => PopUp.closeForm(employee.companyName)}>Close
-                                            </button>
+                                            </Button>
                                         </form>
                                     </div>
                                 </TableCell>
-                                <td>{employee.task.map(task => <div>{task.explanation}</div>)}</td>
+                                <TableCell sx={{textAlign: "center"}}>{employee.task.map(task =>
+                                    <Typography fontSize="20px">{task.explanation}</Typography>)}</TableCell>
                             </TableRow>
                     )}
                 </TableBody>
